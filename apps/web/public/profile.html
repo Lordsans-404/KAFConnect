@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile</title>
+  <style>
+    body { background: #f1f5f9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 300px; text-align: center; }
+    h1 { margin-bottom: 1rem; }
+    .info { text-align: left; margin-top: 1rem; }
+    .info p { margin: 0.5rem 0; }
+    button { margin-top: 1.5rem; padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Profil</h1>
+    <div class="info">
+      <p><strong>Nama:</strong> <span id="name">-</span></p>
+      <p><strong>Email:</strong> <span id="email">-</span></p>
+      <p><strong>Level:</strong> <span id="level">-</span></p>
+    </div>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    async function loadProfile() {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        alert('Silakan login dulu')
+        window.location.href = 'login.html'
+        return
+      }
+
+      const res = await fetch('http://localhost:3000/users/profile', {
+        headers: { Authorization: 'Bearer ' + token }
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        document.getElementById('name').textContent = data.name
+        document.getElementById('email').textContent = data.email
+        document.getElementById('level').textContent = data.level
+      } else {
+        alert('Token invalid atau expired. Silakan login ulang.')
+        window.location.href = 'login.html'
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token')
+      window.location.href = 'login.html'
+    }
+
+    loadProfile()
+  </script>
+</body>
+</html>
