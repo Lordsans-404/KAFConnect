@@ -28,4 +28,13 @@ export class Users {
     default: UserLevel.BASIC,
   })
   level: UserLevel;
+  
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ nullable: true })
+  verificationToken: string;
+
+  @Column({ nullable: true })
+  verificationTokenExpires: Date;
 }
