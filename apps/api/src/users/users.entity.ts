@@ -33,7 +33,7 @@ export class Users {
   isVerified: boolean;
 
   @Column({ nullable: true })
-  verificationToken: string;
+  verifyToken: string;
 
   @Column({ nullable: true })
   verificationTokenExpires: Date;

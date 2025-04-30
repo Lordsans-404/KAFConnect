@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     async function loadProfile() {
@@ -42,6 +43,31 @@ export default function ProfilePage() {
     localStorage.removeItem('token')
     window.location.href = '/'
   }
+
+  const handleResendVerification = async (email:string) => {
+    try {
+      // Get the user's email from your auth context or wherever it's stored
+      const userEmail = email || '';
+      
+      const response = await axios.post(
+        'http://localhost:3000/users/resend-verification',
+        { email: userEmail },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            // Add authorization header if needed
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      setMessage(response.data.message);
+    } catch (error) {
+      setMessage(error.response?.data?.message || 'Failed to resend verification email');
+    } finally {
+      console.log("success")
+    }
+  };
+
   return (
     <div className="w-screen py-5 px-10">
       <h1 className="text-3xl font-bold mb-6">Complete Your Profile</h1>
@@ -88,8 +114,8 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" className="bg-green-400 hover:bg-green-300">
-                        Verified Your Email
+                      <Button variant="outline" onClick={() => handleResendVerification(user.email)} className="bg-green-400 hover:bg-green-300">
+                        Verify Your Email
                       </Button>
                       <Button variant="destructive" onClick={logout}>Log Out</Button>
                     </div>
