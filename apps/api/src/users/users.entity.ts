@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Unique, AfterUpdate, BeforeUpdate } from 'typeorm';
 
 export enum UserLevel {
   BASIC = 'basic',
@@ -37,4 +37,9 @@ export class Users {
 
   @Column({ nullable: true })
   verificationTokenExpires: Date;
+
+  @BeforeUpdate() // Tambahkan Expire Date Jika User Sudah Diverifikasi
+  updateExpire(){
+    this.verificationTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  }
 }

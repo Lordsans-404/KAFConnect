@@ -28,6 +28,7 @@ export default function ProfilePage() {
 
         if (res.ok) {
           setUser(data)
+          console.log(data)
         } else {
           alert("Token invalid atau expired. Silakan login ulang.")
           window.location.href = "/"
@@ -60,6 +61,7 @@ export default function ProfilePage() {
           },
         }
       );
+      console.log(response.data.message);
       setMessage(response.data.message);
     } catch (error) {
       setMessage(error.response?.data?.message || 'Failed to resend verification email');
@@ -108,13 +110,13 @@ export default function ProfilePage() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Account Status</p>
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-amber-500"></div>
-                      <p className="font-medium">Unverified Email</p>
+                      <div className={`h-2 w-2 rounded-full ${user.isVerified ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+                      <p className="font-medium">{user.isVerified ? 'Verified' : 'Not Verified'}</p>
                     </div>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" onClick={() => handleResendVerification(user.email)} className="bg-green-400 hover:bg-green-300">
+                      <Button variant="outline" onClick={() => handleResendVerification(user.email)} className={` bg-green-400 hover:bg-green-300 ${user.isVerified ? 'hidden' : ''}`}>
                         Verify Your Email
                       </Button>
                       <Button variant="destructive" onClick={logout}>Log Out</Button>

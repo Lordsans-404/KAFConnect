@@ -52,12 +52,12 @@ export function ProfileForm() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" name="phone" placeholder="+1 (555) 000-0000" required disabled={isLoading} />
+          <Input id="phone" name="phone" placeholder="0845 2425 2005" required disabled={isLoading} />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="idNumber">Identity Card Number</Label>
-          <Input id="idNumber" name="idNumber" placeholder="ID-12345678" required disabled={isLoading} />
+          <Input id="idNumber" name="idNumber" placeholder="0012233445566778" required disabled={isLoading} />
         </div>
       </div>
 
@@ -88,27 +88,6 @@ export function ProfileForm() {
           <Label htmlFor="zipCode">Zip/Postal Code</Label>
           <Input id="zipCode" name="zipCode" placeholder="Zip/Postal Code" required disabled={isLoading} />
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="country">Country</Label>
-        <Select disabled={isLoading} name="country" required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select your country" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="us">United States</SelectItem>
-            <SelectItem value="ca">Canada</SelectItem>
-            <SelectItem value="uk">United Kingdom</SelectItem>
-            <SelectItem value="au">Australia</SelectItem>
-            <SelectItem value="de">Germany</SelectItem>
-            <SelectItem value="fr">France</SelectItem>
-            <SelectItem value="jp">Japan</SelectItem>
-            <SelectItem value="cn">China</SelectItem>
-            <SelectItem value="in">India</SelectItem>
-            <SelectItem value="br">Brazil</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="space-y-2">

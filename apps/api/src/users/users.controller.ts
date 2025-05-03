@@ -8,6 +8,7 @@ import {
   HttpStatus,
   UseGuards,
   Req,
+  Logger,
   BadRequestException,
   UnauthorizedException
 } from '@nestjs/common';
@@ -93,13 +94,9 @@ export class UsersController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  getProfile(@Req() req) {
-    return {
-      name: req.user.name,
-      email: req.user.email,
-      level: req.user.level || 'basic',
-      isVerified: req.user.isVerified // Include verification status
-    };
+  async getProfile(@Req() req) {
+    const user = await this.usersService.findOne({ where: { email: req.user.email },select: ['id', 'email', 'name', 'isVerified', 'level'] });
+    return user;
   }
 
   @Post('resend-verification')
@@ -111,6 +108,7 @@ export class UsersController {
     }
 
     if (user.isVerified) {
+      Logger.log("Udh Verified Woy!!");
       throw new BadRequestException('Email is already verified');
     }
 
