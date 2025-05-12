@@ -26,8 +26,14 @@ export function ProfileForm() {
       // In a real application, you would send this data to your backend
       // await saveProfileData(formData)
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const phone = document.getElementById('phone').value
+      const idNumber = document.getElementById('idNumber').value
+      const address = document.getElementById('address').value
+      const city = document.getElementById('city').value
+      const state = document.getElementById('state').value
+      const zipCode = document.getElementById('zipCode').value
+      const bio = document.getElementById('bio').value
+
 
       toast({
         title: "Profile updated",

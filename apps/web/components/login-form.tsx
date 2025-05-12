@@ -29,7 +29,7 @@ export function LoginForm({ switchToRegister }: { switchToRegister: () => void }
     if (res.ok) {
       alert('Login berhasil')
       localStorage.setItem('token', data.access_token)
-      window.location.href = '/profile'
+      window.location.href = data.url
     } else {
       alert(data.message || 'Login gagal')
     }

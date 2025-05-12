@@ -1,84 +1,68 @@
-# Turborepo starter
+# SDM Recruiter(KAFConnect) – 3rd Group
 
-This Turborepo starter is maintained by the Turborepo core team.
+Proyek ini dikembangkan oleh Kelompok 3 sebagai tugas pengembangan aplikasi web modern. Aplikasi ini bertujuan untuk membantu proses rekrutmen SDM pada suatu perusahaan secara efisien melalui sistem manajemen lowongan kerja dan pelamar berbasis web, sebut saja KAFConnect
 
-## Using this example
+## 👨‍💻 Anggota Kelompok
+- Kelvin Faza
+- Alfandrew Fisabilillah
+- M Farros Mufid
 
-Run the following command:
+## 🚀 Teknologi yang Digunakan
 
-```sh
-npx create-turbo@latest
-```
+Proyek ini dibangun dengan menggunakan stack teknologi berikut:
 
-## What's inside?
+- **Turborepo** – Monorepo tool untuk mengelola frontend dan backend dalam satu repositori.
+- **Next.js** – Framework React untuk membangun frontend yang responsif dan dinamis.
+- **NestJS** – Framework backend berbasis Node.js yang modular dan scalable.
+- **PostgreSQL** – Sistem manajemen basis data relasional open-source yang andal.
 
-This Turborepo includes the following packages/apps:
+## 📁 Struktur Proyek
+- /apps
+- /apps/web -> Frontend (Next.js)
+- /apps/api -> Backend (NestJS)
+- /packages
+etc.
 
-### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+## ⚙️ Setup dan Instalasi
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+1. **Clone repository ini:**
 
-### Utilities
+   ```sh
+   git clone https://github.com/Lordsans-404/KAFConnect.git
+   cd KAFConnect
+   ```
 
-This Turborepo has some additional tools already setup for you:
+2. **Install Dependencies**
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+	```sh
+   pnpm install
+   ```
 
-### Build
+3. **Setup Config**
 
-To build all apps and packages, run the following command:
+	```sh
+   .env
+   app.module.ts #Konfigurasi sesuai database 
+   ```
 
-```
-cd my-turborepo
-pnpm build
-```
+4. **Run🏃‍♂️💨**
+	
+	```sh
+   pnpm dev
+   # or
+   turbo run dev
+   ```
 
-### Develop
+## 🛠️ Fitur Utama
+- Admin dapat membuat, mengubah, dan menghapus lowongan kerja.
 
-To develop all apps and packages, run the following command:
+- Admin dan Staff dapat melihat daftar pelamar dan detail aplikasinya.
 
-```
-cd my-turborepo
-pnpm dev
-```
+- Pelamar dapat mengirim lamaran kerja secara online.
 
-### Remote Caching
+- Autentikasi dan otorisasi.
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/docs/reference/command-line-reference)
+## 📌 Catatan
+Proyek ini masih dalam tahap pengembangan.
+Doakan Project Kami Cepat Kelar Guys🙏

@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Users } from './users.entity';
+import { User, UserProfile } from './users.entity';
 import { CreateUserDto } from './dto/register.dto';
+import { CreateUserProfileDto } from './dto/create-profile.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
@@ -15,8 +16,10 @@ import { EmailService } from '../email/email.service';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(Users)
-    private readonly usersRepo: Repository<Users>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+    @InjectRepository(UserProfile)
+    private readonly userProfileRepository: Repository<UserProfile>,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
   ) {}
@@ -24,33 +27,33 @@ export class UsersService {
   async register(createUserDto: CreateUserDto & { 
     verifyToken?: string; 
     isVerified?: boolean 
-  }): Promise<Users> {
+  }): Promise<User> {
     const { password, ...rest } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Check if email already exists
-    const existingUser = await this.usersRepo.findOne({ 
+    const existingUser = await this.userRepo.findOne({ 
       where: { email: createUserDto.email } 
     });
     if (existingUser) {
       throw new ConflictException('Email already registered');
     }
 
-    const user = this.usersRepo.create({
+    const user = this.userRepo.create({
       ...rest,
       password: hashedPassword,
       verifyToken: createUserDto.verifyToken,
       isVerified: createUserDto.isVerified || false
     });
 
-    return this.usersRepo.save(user);
+    return this.userRepo.save(user);
   }
 
   async login(email: string, password: string): Promise<{ 
     access_token: string; 
-    user: Partial<Users> 
+    user: Partial<User> 
   }> {
-    const user = await this.usersRepo.findOne({ 
+    const user = await this.userRepo.findOne({ 
       where: { email },
       select: ['id', 'email', 'password', 'name', 'level', 'isVerified']
     });
@@ -84,7 +87,7 @@ export class UsersService {
   }
 
 	async sendVerificationEmail(email: string, token: string) {
-		const user = await this.usersRepo.findOne({ 
+		const user = await this.userRepo.findOne({ 
 			where: { email },
 			select: ['id', 'email', 'password', 'name', 'level', 'isVerified']
 		});
@@ -95,12 +98,55 @@ export class UsersService {
 		await this.emailService.sendVerificationEmail(user.email,token);
 	}
 
-  	// Add these helper methods if not already present
-	async findOne(conditions: any): Promise<Users | undefined> {
-	  	const user = await this.usersRepo.findOne(conditions);
+  async createUserProfile(createDto: CreateUserProfileDto, userId: number): Promise<UserProfile> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const profile = this.userProfileRepository.create({
+      ...createDto,
+      user,
+    });
+
+    return this.userProfileRepository.save(profile);
+  }
+
+
+  // Add these helper methods if not already present
+	async userFindOne(conditions: any): Promise<User | undefined> {
+	  	const user = await this.userRepo.findOne(conditions);
 	  	return user || undefined; // Convert null to undefined
 	}
-  async save(user: Users): Promise<Users> {
-    	return this.usersRepo.save(user);
+
+  async profileFindOne(conditions: any): Promise<UserProfile | undefined> {
+      const profile = await this.userProfileRepository.findOne(conditions);
+      return profile || undefined; // Convert null to undefined
+  }
+
+  async getAllUsersWithProfiles() {
+    return this.userProfileRepository.find({
+      relations: ['user'],
+    }) || undefined;
+  }
+
+  async getAllRegisteredUsers() {
+    return this.userRepo.find() || undefined;
+  }
+
+  // Untuk mendapatkan User dan Profile sekaligus
+  async profileByUserId(userId: number) {
+    return this.userProfileRepository.findOne({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      relations: ['user'],
+    });
+  }
+
+  async save(user: User): Promise<User> {
+    	return this.userRepo.save(user);
   	}
 }

@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { UsersController } from './users.controller';
+import { AdminService } from './admin.service';
+import { UsersService } from '../users/users.service';
+import { AdminController } from './admin.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User, UserProfile } from './users.entity';
+import { Job } from '../jobs/jobs.entity';
+import { User, UserProfile } from '../users/users.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailModule } from '../email/email.module';
@@ -10,8 +12,7 @@ import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    TypeOrmModule.forFeature([UserProfile]),
+    TypeOrmModule.forFeature([Job, User, UserProfile]),
     EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -21,9 +22,8 @@ import { EmailModule } from '../email/email.module';
       }),
       inject: [ConfigService],
     }),
-    ConfigModule.forRoot(),
-    ],
-  controllers: [UsersController],
-  providers: [UsersService]
+  ],
+  providers: [AdminService,UsersService],
+  controllers: [AdminController]
 })
-export class UsersModule {}
+export class AdminModule {}

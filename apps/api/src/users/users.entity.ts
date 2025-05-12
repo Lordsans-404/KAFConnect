@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique, AfterUpdate, BeforeUpdate } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, Unique, AfterUpdate, BeforeUpdate, OneToOne } from 'typeorm';
 
 export enum UserLevel {
   BASIC = 'basic',
@@ -7,9 +7,9 @@ export enum UserLevel {
   SUPER_ADMIN = 'super_admin',
 }
 
-@Entity()
+@Entity("users")
 @Unique(['email']) // Ensure email is unique
-export class Users {
+export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -25,7 +25,7 @@ export class Users {
   @Column({
     type: 'enum',
     enum: UserLevel,
-    default: UserLevel.BASIC,
+  default: UserLevel.BASIC,
   })
   level: UserLevel;
   
@@ -42,4 +42,37 @@ export class Users {
   updateExpire(){
     this.verificationTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
   }
+}
+
+@Entity('user_profiles')
+@Unique(['idCardNumber','user'])
+export class UserProfile {
+  @PrimaryGeneratedColumn()
+  profile_id: number;
+
+  @OneToOne(() => User)
+  @JoinColumn({name: 'user_id'})
+  user: User;
+
+  @Column({length: 15})
+  phoneNumber: string;
+
+  @Column({length: 16})
+  idCardNumber: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  address: string;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  city: string;
+
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  stateProvince: string;
+
+  @Column({ length: 5, nullable: true})
+  postalCode: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  bio: string;
+
 }

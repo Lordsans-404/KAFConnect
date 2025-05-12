@@ -4,10 +4,12 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProfileForm } from "@/components/profile-form"
+import { UserProfile } from "@/components/user-profile"
 import { Button } from "@/components/ui/button"
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null)
+  const [data, setData] = useState<any>(null)
+  const [profile,setProfile] = useState<any>(null)
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -25,9 +27,11 @@ export default function ProfilePage() {
         })
 
         const data = await res.json()
+        const profile = await data.profile
 
         if (res.ok) {
-          setUser(data)
+          setData(data)
+          setProfile(data.profile)
           console.log(data)
         } else {
           alert("Token invalid atau expired. Silakan login ulang.")
@@ -45,53 +49,64 @@ export default function ProfilePage() {
     window.location.href = '/'
   }
 
-  const handleResendVerification = async (email:string) => {
+  const handleResendVerification = async (email: string) => {
     try {
-      // Get the user's email from your auth context or wherever it's stored
       const userEmail = email || '';
-      
-      const response = await axios.post(
-        'http://localhost:3000/users/resend-verification',
-        { email: userEmail },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            // Add authorization header if needed
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      console.log(response.data.message);
-      setMessage(response.data.message);
+      console.log("Resend Verification - Start");
+
+      // Basic fetch() request
+      const response = await fetch('http://localhost:3000/users/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ email: userEmail }),
+      });
+
+      // Check if the request succeeded (status 200-299)
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      // Parse the JSON response
+      const data = await response.json();
+      console.log("Response:", data.message);
+      setMessage(data.message);
+
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Failed to resend verification email');
+      console.error("Request failed:", error);
+      setMessage(error.message || 'Failed to resend verification email');
     } finally {
-      console.log("success")
+      console.log("Request completed");
     }
   };
 
   return (
-    <div className="w-screen py-5 px-10">
-      <h1 className="text-3xl font-bold mb-6">Complete Your Profile</h1>
-      <p className="text-muted-foreground mb-8">
-        Please provide additional information to complete your profile and get the most out of KAFConnect.
-      </p>
-
-      <div className="grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-1">
-          <Card>
+    <div className="w-auto py-5 px-10">
+      <h1 className="text-3xl font-bold mb-6">Your Profile</h1>
+      {profile?(
+        <p className="text-muted-foreground mb-8">
+          Thanks For Providing Additional Information, We Promise To Protect Your Data
+        </p>
+      ):(
+        <p className="text-muted-foreground mb-8">
+          Please provide additional information to complete your profile and get the most out of KAFConnect.
+        </p>
+      )}
+      <div className="grid gap-8 md:grid-cols-5 lg:grid-cols-3">
+        <div className="md:col-span-2 lg:col-span-1">
+          <Card className="h-full relative">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>Your basic account information</CardDescription>
             </CardHeader>
-            <CardContent>
-              {user ? (
+            <CardContent className="mb-4">
+              {data ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-center mb-6">
                     <div className="relative">
                       <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl">
-                        {user.firstName?.[0]}
-                        {user.lastName?.[0]}
                       </div>
                       <div className="absolute bottom-0 right-0 h-6 w-6 rounded-full bg-green-500 border-2 border-white" />
                     </div>
@@ -99,26 +114,30 @@ export default function ProfilePage() {
 
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Full Name</p>
-                    <p className="font-medium">{user.name}</p>
+                    <p className="font-medium">{data.user.name}</p>
                   </div>
 
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Email</p>
-                    <p className="font-medium">{user.email}</p>
+                    <p className="font-medium">{data.user.email}</p>
                   </div>
 
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Account Status</p>
                     <div className="flex items-center gap-2">
-                      <div className={`h-2 w-2 rounded-full ${user.isVerified ? 'bg-green-500' : 'bg-amber-500'}`}></div>
-                      <p className="font-medium">{user.isVerified ? 'Verified' : 'Not Verified'}</p>
+                      <div className={`h-2 w-2 rounded-full ${data.user.isVerified ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+                      <p className="font-medium">{data.user.isVerified ? 'Verified' : 'Not Verified'}</p>
                     </div>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" onClick={() => handleResendVerification(user.email)} className={` bg-green-400 hover:bg-green-300 ${user.isVerified ? 'hidden' : ''}`}>
+                      <Button variant="outline" onClick={() => handleResendVerification(data.user.email)} className={` bg-green-400 hover:bg-green-300 ${data.user.isVerified ? 'hidden' : ''}`}>
                         Verify Your Email
                       </Button>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-5">
+                    <div className="flex items-center gap-2">
                       <Button variant="destructive" onClick={logout}>Log Out</Button>
                     </div>
                   </div>
@@ -130,7 +149,7 @@ export default function ProfilePage() {
           </Card>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-3 lg:col-span-2">
           <Tabs defaultValue="personal" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="personal">Personal Information</TabsTrigger>
@@ -141,10 +160,20 @@ export default function ProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Personal Information</CardTitle>
-                  <CardDescription>Please provide your personal details to complete your profile</CardDescription>
+                  {profile ? (
+                      <CardDescription>See Details Of Your Information</CardDescription>
+                    ) : (
+                      <CardDescription>Please provide your personal details to complete your profile</CardDescription>
+                    )
+                  }
                 </CardHeader>
                 <CardContent>
-                  <ProfileForm />
+                  {profile ? (
+                      <UserProfile userData={data}/>
+                    ) : (
+                      <ProfileForm />
+                    )
+                  }
                 </CardContent>
               </Card>
             </TabsContent>

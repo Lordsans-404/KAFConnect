@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { ChevronRight, Building2, Users, Search, Award, BarChart } from "lucide-react"
+import { ChevronRight, Building2, Users, Search, Award, BarChart, Briefcase } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 // import { LoginModal } from "@/components/login-modal"
@@ -12,7 +12,7 @@ export default function LandingPage() {
       <header className="border-b sticky top-0 z-50 w-full bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md">
         <div className="px-6 md:px-8 flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
+            <Briefcase className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">KAFConnect</span>
           </div>
 

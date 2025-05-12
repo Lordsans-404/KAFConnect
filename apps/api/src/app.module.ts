@@ -5,6 +5,9 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { EmailModule } from './email/email.module';
 import { LoggerMiddleware } from './logger.middleware';
+import { JobsModule } from './jobs/jobs.module';
+import { EvaluationModule } from './evaluation/evaluation.module';
+import { AdminModule } from './admin/admin.module';
 
 
 @Module({
@@ -21,6 +24,9 @@ import { LoggerMiddleware } from './logger.middleware';
       entities: [__dirname + '/**/*.entity{.ts,.js}'], // Auto-load entities
       synchronize: true, // Automatically sync database schema (for development only)
     }),
+    JobsModule,
+    EvaluationModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
