@@ -23,4 +23,10 @@ export class AdminService {
     Object.assign(job, updateJobDto);
     return this.jobRepository.save(job);
   }
+
+  async getAllJobs() {
+    return this.jobRepository.find({
+      relations: ['applications'],
+    }) || undefined;
+  }
 }

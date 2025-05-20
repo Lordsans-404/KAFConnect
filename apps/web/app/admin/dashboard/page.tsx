@@ -31,6 +31,8 @@ import { Input } from "@/components/ui/input"
 import { AdminNavbar } from "@/components/admin-nav"
 import { useTheme, ThemeProvider } from "next-themes"
 import { useRouter } from 'next/navigation'
+import { CreateJob } from "@/components/create-job"
+import { CreateStaff } from "@/components/create-staff"
 
 /**
  * Main Dashboard Component
@@ -50,16 +52,17 @@ export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<any>({})
+  const [token, setToken] = useState<any>({})
 
   // Authentication and Data Fetch
   useEffect(() => {
     const token = localStorage.getItem("token")
+    setToken(token)  
     if (!token) {
       alert("Please login first")
       router.push('/')
       return
     }
-
     const fetchData = async () => {
       try {
         const res = await fetch("http://localhost:3000/admin/dashboard", {
@@ -70,7 +73,7 @@ export default function Dashboard() {
         console.log("Fetched Data:", json)
 
         if (res.ok) {
-          setData(json) // ✅ Stores the object properly
+          setData(json)
         } else {
           alert("Token invalid atau expired. Silakan login ulang.")
           router.push('/')
@@ -84,8 +87,6 @@ export default function Dashboard() {
 
     fetchData()
   }, [router])
-
-
   // Real-time Clock
   useEffect(() => {
     const interval = setInterval(() => {
@@ -135,7 +136,7 @@ export default function Dashboard() {
           <Sidebar currentTime={currentTime} formatDate={formatDate} />
           
           {/* Main Content Area - Recruitment Overview */}
-          <MainDashboardContent currentTime={currentTime} formatDate={formatDate} />
+          <MainDashboardContent data={data} currentTime={currentTime} formatDate={formatDate} />
           
           {/* Right Sidebar - Summary and Quick Actions */}
           <div className="col-span-12 lg:col-span-3">
@@ -176,8 +177,8 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-3">
-                    <ActionButton icon={User} label="Add Candidate" />
-                    <ActionButton icon={Briefcase} label="Post Job" />
+                    <CreateStaff/>
+                    <CreateJob token={token} />
                     <ActionButton icon={Calendar} label="Schedule" />
                     <ActionButton icon={FileText} label="Reports" />
                   </div>
@@ -240,7 +241,7 @@ function Sidebar({ currentTime, formatDate }: { currentTime: Date; formatDate: (
  * - Recruitment overview metrics
  * - Candidate/job/pipeline tabs
  */
-function MainDashboardContent({ currentTime, formatDate }: { currentTime: Date; formatDate: (date: Date) => string }) {
+function MainDashboardContent({ currentTime, formatDate, data }: { currentTime: Date; data:any; formatDate: (date: Date) => string }) {
   return (
     <div className="col-span-12 md:col-span-9 lg:col-span-7">
       <div className="grid gap-6">
@@ -319,7 +320,7 @@ function MainDashboardContent({ currentTime, formatDate }: { currentTime: Date; 
 
                 {/* Jobs Tab Content */}
                 <TabsContent value="jobs" className="mt-0">
-                  <JobList />
+                  <JobList all_jobs={data.all_jobs} />
                 </TabsContent>
               </Tabs>
             </div>
@@ -612,50 +613,43 @@ function CandidateRow({
  * 
  * Displays a list of open positions with applicant counts.
  */
-function JobList() {
+function JobList({all_jobs}:{all_jobs:any}) {
   return (
     <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
       <div className="divide-y divide-slate-200 dark:divide-slate-700">
-        <JobRow
-          title="Senior UX Designer"
-          department="Design"
-          location="San Francisco, CA"
-          applicants={48}
-          posted="2 weeks ago"
-        />
-        <JobRow
-          title="Full Stack Developer"
-          department="Engineering"
-          location="Remote"
-          applicants={72}
-          posted="3 days ago"
-        />
-        <JobRow
-          title="Product Manager"
-          department="Product"
-          location="New York, NY"
-          applicants={36}
-          posted="1 month ago"
-        />
-        <JobRow
-          title="Marketing Specialist"
-          department="Marketing"
-          location="Chicago, IL"
-          applicants={24}
-          posted="5 days ago"
-        />
-        <JobRow
-          title="Data Analyst"
-          department="Analytics"
-          location="Remote"
-          applicants={52}
-          posted="1 week ago"
-        />
+        {all_jobs.map(job => (
+          <JobRow
+            key={job.id}
+            title={job.title}
+            department={job.department}
+            location={job.location}
+            applicants={job.applications?.length ?? 0}
+            posted={timeAgo(new Date(job.postedAt))}
+          />
+        ))}
       </div>
     </div>
   )
 }
 
+// Helper to format time ago
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  const intervals = [
+    { label: 'year', seconds: 31536000 },
+    { label: 'month', seconds: 2592000 },
+    { label: 'week', seconds: 604800 },
+    { label: 'day', seconds: 86400 },
+    { label: 'hour', seconds: 3600 },
+    { label: 'minute', seconds: 60 },
+  ];
+
+  for (const interval of intervals) {
+    const count = Math.floor(seconds / interval.seconds);
+    if (count > 0) return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
+  }
+  return 'Just now';
+}
 /**
  * Job Row Component
  * 

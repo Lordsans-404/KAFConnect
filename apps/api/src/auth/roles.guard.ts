@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   Injectable,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -24,7 +25,7 @@ export class RolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-
+    Logger.log("Here is the admin")
     if (!user || !user.level) {
       throw new ForbiddenException('User role is missing');
     }
@@ -32,6 +33,11 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles.includes(user.level)) {
       throw new ForbiddenException('Not an admin or staff');
     }
+    if(user.level == 'admin' || user.level == 'staff' || user.level == 'super_admin'){
+      Logger.log("Yap ini admin/staff")
+      Logger.log(user.level)
+    }
+
 
     return true;
   }

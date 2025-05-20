@@ -1,4 +1,4 @@
-import { Controller, Post, Req, Get, Body, Put, Param, ParseIntPipe, UseGuards, SetMetadata, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Req, Get, Body, Put, Logger, Param, ParseIntPipe, UseGuards, SetMetadata, ForbiddenException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateJobDto, UpdateJobDto } from './dto/job.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -16,20 +16,24 @@ export class AdminController {
 
   @Get('dashboard')	
   @UseGuards(JwtAuthGuard,RolesGuard)
-  @SetMetadata('roles', ['admin', 'staff'])
+  @SetMetadata('roles', ['super_admin', 'admin', 'staff'])
   async getProfile(@Req() req) {
     const user_profile = await this.usersService.profileByUserId(req.user.id )
     const users_by_profile = await this.usersService.getAllUsersWithProfiles()
     const all_users = await this.usersService.getAllRegisteredUsers()
-    return {profile:user_profile,users_by_profile,all_users};
+    const all_jobs = await this.adminService.getAllJobs()
+    return {profile:user_profile,users_by_profile,all_users,all_jobs};
   }
   
-  @Post()
-  create(@Body() createJobDto: CreateJobDto): Promise<Job> {
+  @Post('new-job')
+  @UseGuards(JwtAuthGuard,RolesGuard)  
+  newJob(@Body() createJobDto: CreateJobDto){
+    Logger.log("Posted")
     return this.adminService.createJob(createJobDto);
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard,RolesGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateJobDto: UpdateJobDto
