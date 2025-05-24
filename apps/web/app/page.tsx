@@ -1,3 +1,5 @@
+"use client"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, Building2, Users, Search, Award, BarChart, Briefcase } from "lucide-react"
 import Link from "next/link"
@@ -7,6 +9,8 @@ import Image from "next/image"
 import {AuthModalController} from "@/components/auth-dialog-controller"
 
 export default function LandingPage() {
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [authModalType, setAuthModalType] = useState<"login" | "register" | null>(null)
   return (
     <div className="flex flex-col min-h-screen">
       <header className="border-b sticky top-0 z-50 w-full bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md">
@@ -32,26 +36,36 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-4">
-            {/*<LoginModal
-              trigger={
-                <Button variant="link">
-                  Login
-                </Button>
-              }
-            />
-            <RegisterModal
-              trigger={
-                <Button variant="outline">
-                  Register
-                </Button>
-              }
-            />*/}
-            <AuthModalController />
+            <Button 
+              onClick={() => {
+                setAuthModalType("login")
+                setAuthModalOpen(true)
+              }}
+              variant="link"
+            >
+              Login
+            </Button>
+            <Button 
+              onClick={() => {
+                setAuthModalType("register")
+                setAuthModalOpen(true)
+              }}
+              variant="outline"
+              className="bg-dark"
+            >
+              Register
+            </Button>
           </div>
         </div>
       </header>
       <main className="flex-1">
-
+        <AuthModalController
+          open={authModalOpen}
+          modalType={authModalType}
+          onOpenChange={setAuthModalOpen}
+          setModalType={setAuthModalType}
+          showTriggerButtons={false}
+        />
         {/* Hero Section */}
         <section className="h-svh py-20 md:py-28 -mt-16 bg-[url('/bg-company.jpg')] bg-cover bg-center relative flex ">
           <div className="absolute inset-0 bg-black/50 z-0" />
@@ -65,12 +79,16 @@ export default function LandingPage() {
                   Helps candidates to find the perfect job and land their dream roles.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Link href="/register">
-                    <Button size="lg" className="w-full sm:w-auto">
-                      Get Started
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button 
+                    size="lg"
+                    className="w-full sm:w-auto"
+                    onClick={() => {
+                      setAuthModalType("register")
+                      setAuthModalOpen(true)
+                    }} >
+                    Get Started
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
                   <Link href="#how-it-works">
                     <Button size="lg" variant="outline" className="w-full sm:w-auto">
                       Learn More
@@ -218,11 +236,14 @@ export default function LandingPage() {
                 Join thousands of successful job seekers on KAFConnect today.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link href="/register">
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                    Join Now
-                  </Button>
-                </Link>
+                <Button size="lg" variant="secondary" className="w-full sm:w-auto"
+                  onClick={() => {
+                    setAuthModalType("register")
+                    setAuthModalOpen(true)
+                  }}
+                >
+                  Join Now
+                </Button>
               </div>
             </div>
           </div>

@@ -1,7 +1,6 @@
 // components/auth-modal-controller.tsx
 "use client"
 
-import { useState } from "react"
 import { LoginForm } from "./login-form"
 import { RegisterForm } from "./register-form"
 import {
@@ -15,30 +14,43 @@ import { Button } from "@/components/ui/button"
 
 type ModalType = "login" | "register" | null
 
-export function AuthModalController() {
-  const [open, setOpen] = useState(false)
-  const [modalType, setModalType] = useState<ModalType>(null)
+interface AuthModalControllerProps {
+  open: boolean
+  modalType: ModalType
+  onOpenChange: (open: boolean) => void
+  setModalType: (type: ModalType) => void
+  showTriggerButtons?: boolean
+}
 
+export function AuthModalController({
+  open,
+  modalType,
+  onOpenChange,
+  setModalType,
+  showTriggerButtons = true,
+}: AuthModalControllerProps) {
   function openModal(type: ModalType) {
     setModalType(type)
-    setOpen(true)
+    onOpenChange(true)
   }
 
   function closeModal() {
-    setOpen(false)
+    onOpenChange(false)
     setModalType(null)
   }
 
   return (
     <>
-      {/* Trigger buttons */}
-      <div className="flex gap-2">
-        <Button variant="link" onClick={() => openModal("login")}>Login</Button>
-        <Button variant="outline" onClick={() => openModal("register")}>Register</Button>
-      </div>
+      {/* Trigger buttons - optional */}
+      {showTriggerButtons && (
+        <div className="flex gap-2">
+          <Button variant="link" onClick={() => openModal("login")}>Login</Button>
+          <Button variant="outline" onClick={() => openModal("register")}>Register</Button>
+        </div>
+      )}
 
       {/* The actual dialog */}
-      <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (!val) setModalType(null) }}>
+      <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setModalType(null) }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>

@@ -7,11 +7,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserProfile } from './users.entity';
-import { CreateUserDto } from './dto/register.dto';
+import { CreateUserDto, RegisterResponseDto } from './dto/register.dto';
 import { CreateUserProfileDto } from './dto/create-profile.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
+import { JobsService } from '../jobs/jobs.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -22,16 +24,19 @@ export class UsersService {
     private readonly userProfileRepository: Repository<UserProfile>,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
+    private readonly jobsService: JobsService,
   ) {}
 
-  async register(createUserDto: CreateUserDto & { 
-    verifyToken?: string; 
-    isVerified?: boolean 
-  }): Promise<User> {
+  // ==============================================
+  // ENDPOINT SERVICE: dipanggil dari controller
+  // ==============================================
+
+  async register(createUserDto: CreateUserDto): Promise<RegisterResponseDto>{
+    const verifyToken = crypto.randomBytes(20).toString('hex');
+
     const { password, ...rest } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Check if email already exists
     const existingUser = await this.userRepo.findOne({ 
       where: { email: createUserDto.email } 
     });
@@ -39,14 +44,22 @@ export class UsersService {
       throw new ConflictException('Email already registered');
     }
 
-    const user = this.userRepo.create({
+    const createUser = this.userRepo.create({
       ...rest,
       password: hashedPassword,
-      verifyToken: createUserDto.verifyToken,
-      isVerified: createUserDto.isVerified || false
+      verifyToken: verifyToken,
+      isVerified: false
     });
-
-    return this.userRepo.save(user);
+    const savedUser = await this.userRepo.save(createUser);
+    const payload = { 
+      email: savedUser.email, 
+      sub: savedUser.id,
+      isVerified: false // Important to include verification status
+    }
+    return{
+      ...savedUser,
+      access_token : await this.generateJwt(payload),
+    };
   }
 
   async login(email: string, password: string): Promise<{ 
@@ -82,21 +95,25 @@ export class UsersService {
     };
   }
 
-  generateJwt(payload: any): string {
-    return this.jwtService.sign(payload);
+  async dashboardService(req: any) {
+    const profile = await this.profileByUserId(req.id);
+    const jobs = await this.jobsService.getAllJobs();
+    return { profile, jobs };
   }
 
-	async sendVerificationEmail(email: string, token: string) {
-		const user = await this.userRepo.findOne({ 
-			where: { email },
-			select: ['id', 'email', 'password', 'name', 'level', 'isVerified']
-		});
-		if (!user) {
-		    throw new NotFoundException('User not found');
-		}
-		const verificationUrl = `${process.env.APP_URL}/users/verify-email?token=${token}`;
-		await this.emailService.sendVerificationEmail(user.email,token);
-	}
+  async sendVerificationEmail(email: string, token: string) {
+    const user = await this.userRepo.findOne({ 
+      where: { email },
+      select: ['id', 'email', 'password', 'name', 'level', 'isVerified']
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const verificationUrl = `${process.env.APP_URL}/users/verify-email?token=${token}`;
+    await this.emailService.sendVerificationEmail(user.email, token);
+  }
 
   async createUserProfile(createDto: CreateUserProfileDto, userId: number): Promise<UserProfile> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -112,16 +129,22 @@ export class UsersService {
     return this.userProfileRepository.save(profile);
   }
 
+  // ========================================
+  // INTERNAL SERVICE
+  // ========================================
 
-  // Add these helper methods if not already present
-	async userFindOne(conditions: any): Promise<User | undefined> {
-	  	const user = await this.userRepo.findOne(conditions);
-	  	return user || undefined; // Convert null to undefined
-	}
+  generateJwt(payload: any): string {
+    return this.jwtService.sign(payload);
+  }
+
+  async userFindOne(conditions: any): Promise<User | undefined> {
+    const user = await this.userRepo.findOne(conditions);
+    return user || undefined;
+  }
 
   async profileFindOne(conditions: any): Promise<UserProfile | undefined> {
-      const profile = await this.userProfileRepository.findOne(conditions);
-      return profile || undefined; // Convert null to undefined
+    const profile = await this.userProfileRepository.findOne(conditions);
+    return profile || undefined;
   }
 
   async getAllUsersWithProfiles() {
@@ -134,7 +157,6 @@ export class UsersService {
     return this.userRepo.find() || undefined;
   }
 
-  // Untuk mendapatkan User dan Profile sekaligus
   async profileByUserId(userId: number) {
     return this.userProfileRepository.findOne({
       where: {
@@ -143,10 +165,19 @@ export class UsersService {
         },
       },
       relations: ['user'],
+      select: {
+        user: {
+          id: true,
+          name: true,
+          email: true,
+          level: true,
+          isVerified: true,
+        },
+      }
     });
   }
 
   async save(user: User): Promise<User> {
-    	return this.userRepo.save(user);
-  	}
+    return this.userRepo.save(user);
+  }
 }

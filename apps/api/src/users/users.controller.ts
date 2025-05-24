@@ -29,31 +29,11 @@ export class UsersController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() createUserDto: CreateUserDto) {
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(20).toString('hex');
-    
     // Register user with verification token
-    const user = await this.usersService.register({
+    const register = await this.usersService.register({
       ...createUserDto,
-      verifyToken: verificationToken,
-      isVerified: false
     });
-
-    // Send verification email
-    // await this.usersService.sendVerificationEmail(user.email, verificationToken);
-
-    // Return user with access token (optional immediate login)
-    const payload = { 
-      email: user.email, 
-      sub: user.id,
-      isVerified: false // Important to include verification status
-    };
-    
-    return {
-      ...user,
-      access_token: this.usersService.generateJwt(payload),
-      message: 'Registration successful! Please check your email to verify your account.'
-    };
+    return register
   }
 
   @Post('login')
@@ -114,6 +94,12 @@ export class UsersController {
       where: { user: { id: req.user.id } }
     });
     return {user:user,profile:user_profile};
+  }
+
+  @Get('dashboard')
+  @UseGuards(JwtAuthGuard)
+  async getDashboard(@Req() req){
+    return this.usersService.dashboardService(req.user)
   }
 
   @Post('resend-verification')

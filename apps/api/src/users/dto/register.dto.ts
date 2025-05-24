@@ -16,3 +16,11 @@ export class CreateUserDto {
   @IsEnum(UserLevel)
   level?: UserLevel; // optional, defaults to 'basic'
 }
+
+// Untuk type response register
+export class RegisterResponseDto {
+  id: number;
+  email: string;
+  isVerified: boolean;
+  access_token: string;
+}

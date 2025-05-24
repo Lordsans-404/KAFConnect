@@ -6,15 +6,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProfileForm } from "@/components/profile-form"
 import { UserProfile } from "@/components/user-profile"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function ProfilePage() {
   const [data, setData] = useState<any>(null)
   const [profile,setProfile] = useState<any>(null)
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('')
+  const [token, setToken] = useState<any>(null)
 
   useEffect(() => {
     async function loadProfile() {
       const token = localStorage.getItem("token")
+      setToken(token)
       if (!token) {
         alert("Silakan login dulu")
         window.location.href = "/"
@@ -139,6 +142,7 @@ export default function ProfilePage() {
                   <div className="absolute bottom-5">
                     <div className="flex items-center gap-2">
                       <Button variant="destructive" onClick={logout}>Log Out</Button>
+                      <Button variant="outline" className="bg-slate-300 text-dark"><Link href="/dashboard">Dashboard</Link></Button>
                     </div>
                   </div>
                 </div>
@@ -171,7 +175,7 @@ export default function ProfilePage() {
                   {profile ? (
                       <UserProfile userData={data}/>
                     ) : (
-                      <ProfileForm />
+                      <ProfileForm token={token} data_user={data}/>
                     )
                   }
                 </CardContent>

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { UsersService } from '../users/users.service';
+import { JobsService } from '../jobs/jobs.service';
 import { AdminController } from './admin.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Job } from '../jobs/jobs.entity';
@@ -23,7 +24,7 @@ import { EmailModule } from '../email/email.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [AdminService,UsersService],
+  providers: [AdminService,UsersService,JobsService],
   controllers: [AdminController]
 })
 export class AdminModule {}

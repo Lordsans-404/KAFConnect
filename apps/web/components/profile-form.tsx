@@ -9,12 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "@/components/ui/use-toast"
 
-export function ProfileForm() {
+export function ProfileForm({token,data_user}: {token:string;data_user:any}) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsLoading(true)
@@ -25,7 +23,6 @@ export function ProfileForm() {
     try {
       // In a real application, you would send this data to your backend
       // await saveProfileData(formData)
-
       const phone = document.getElementById('phone').value
       const idNumber = document.getElementById('idNumber').value
       const address = document.getElementById('address').value
@@ -33,21 +30,34 @@ export function ProfileForm() {
       const state = document.getElementById('state').value
       const zipCode = document.getElementById('zipCode').value
       const bio = document.getElementById('bio').value
+      if(idNumber.length != 16){
+        alert("Id Number Length Must 16")
+        return;
+      }
+      const data = {
+        "phoneNumber": phone,      
+        "idCardNumber": idNumber,                  
+        "address": address,                        
+        "city": city,          
+        "stateProvince": state,
+        "postalCode": zipCode,
+        "bio": bio
+      } 
+      const res = await fetch(`http://localhost:3000/users/profile/${data_user.user.id}`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
 
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been saved successfully.",
-      })
+      alert("Thanks For Submitting Your Profile")
 
       // Redirect to dashboard or home page
-      router.push("/dashboard")
+      router.push('/dashboard')
     } catch (error) {
-      toast({
-        title: "Something went wrong",
-        description: "Your profile information could not be saved. Please try again.",
-        variant: "destructive",
-      })
+      alert("Something Went Wrong, Failed to send your data")
     } finally {
       setIsLoading(false)
     }

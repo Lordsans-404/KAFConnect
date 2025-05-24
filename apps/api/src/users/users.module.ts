@@ -6,12 +6,15 @@ import { User, UserProfile } from './users.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailModule } from '../email/email.module';
+import { JobsService } from '../jobs/jobs.service';
+import { Job, JobApplication } from '../jobs/jobs.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    TypeOrmModule.forFeature([UserProfile]),
+    TypeOrmModule.forFeature([User, UserProfile]),
+    TypeOrmModule.forFeature([Job, JobApplication]),
+    
     EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -24,6 +27,6 @@ import { EmailModule } from '../email/email.module';
     ConfigModule.forRoot(),
     ],
   controllers: [UsersController],
-  providers: [UsersService]
+  providers: [UsersService,JobsService]
 })
 export class UsersModule {}
