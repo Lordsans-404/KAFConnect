@@ -1,121 +1,208 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export function ProfileForm({token,data_user}: {token:string;data_user:any}) {
+interface ProfileData {
+  phoneNumber: string
+  idCardNumber: string
+  address: string
+  city: string
+  stateProvince: string
+  postalCode: string
+  bio: string
+}
+
+interface ProfileFormProps {
+  token: string
+  data_user: {
+    user: {
+      id: string
+    }
+  }
+}
+
+export function ProfileForm({ token, data_user }: ProfileFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const [changedItems, setChangedItems] = useState<ChangedItem[]>([]);
+  const [profile, setProfile] = useState<ProfileData>({
+    phoneNumber: "",
+    idCardNumber: "",
+    address: "",
+    city: "",
+    stateProvince: "",
+    postalCode: "",
+    bio: "",
+  })
+  useEffect(() => {
+    if (data_user?.profile) {
+      setProfile(data_user.profile);
+    }
+  }, [data_user?.profile]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setChangedItems(prev => [
+      ...prev.filter(item => item.name !== name),
+      { name, value }
+    ]);
+    setProfile((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setIsLoading(true)
 
-    // Get form data
-    const formData = new FormData(event.currentTarget)
+    if(data_user?.profile){
+      try {
+        const response = await fetch(
+          `http://localhost:3000/users/profile/${data_user.user.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(Object.fromEntries(changedItems.map(({ name, value }) => [name, value]))),
+          }
+        );
 
-    try {
-      // In a real application, you would send this data to your backend
-      // await saveProfileData(formData)
-      const phone = document.getElementById('phone').value
-      const idNumber = document.getElementById('idNumber').value
-      const address = document.getElementById('address').value
-      const city = document.getElementById('city').value
-      const state = document.getElementById('state').value
-      const zipCode = document.getElementById('zipCode').value
-      const bio = document.getElementById('bio').value
-      if(idNumber.length != 16){
-        alert("Id Number Length Must 16")
-        return;
+        if (!response.ok) throw new Error("Failed to update profile");
+
+        alert("Profile updated successfully!");
+        router.push('/dashboard');
+      } catch (error) {
+        alert("Failed to update profile. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
-      const data = {
-        "phoneNumber": phone,      
-        "idCardNumber": idNumber,                  
-        "address": address,                        
-        "city": city,          
-        "stateProvince": state,
-        "postalCode": zipCode,
-        "bio": bio
-      } 
-      const res = await fetch(`http://localhost:3000/users/profile/${data_user.user.id}`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
+    }
+    else{
+      try {
+        const formData = new FormData(event.currentTarget)
+        const formValues = Object.fromEntries(formData.entries()) as Record<string, string>
 
-      alert("Thanks For Submitting Your Profile")
+        // Validate ID number
+        if (formValues.idCardNumber.length !== 16) {
+          alert("ID Number must be 16 characters long")
+          return
+        }
 
-      // Redirect to dashboard or home page
-      router.push('/dashboard')
-    } catch (error) {
-      alert("Something Went Wrong, Failed to send your data")
-    } finally {
-      setIsLoading(false)
+        const profileData: ProfileData = {
+          phoneNumber: formValues.phoneNumber,
+          idCardNumber: formValues.idCardNumber,
+          address: formValues.address,
+          city: formValues.city,
+          stateProvince: formValues.stateProvince,
+          postalCode: formValues.postalCode,
+          bio: formValues.bio
+        }
+
+        const response = await fetch(
+          `http://localhost:3000/users/profile/${data_user.user.id}`,
+          {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(profileData),
+          }
+        )
+
+        if (!response.ok) throw new Error("Failed to save profile")
+
+        alert("Profile submitted successfully!")
+        router.push('/dashboard')
+      } catch (error) {
+        alert("Failed to save profile. Please try again.")
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" name="phone" placeholder="0845 2425 2005" required disabled={isLoading} />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="idNumber">Identity Card Number</Label>
-          <Input id="idNumber" name="idNumber" placeholder="0012233445566778" required disabled={isLoading} />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
-        <Textarea
-          id="address"
-          name="address"
-          placeholder="Enter your full address"
+        <FormField
+          id="phoneNumber"
+          label="Phone Number"
+          placeholder="0845 2425 2005"
+          value={profile.phoneNumber}
+          onChange={handleChange}
           required
           disabled={isLoading}
-          className="min-h-[100px]"
+        />
+
+        <FormField
+          id="idCardNumber"
+          label="Identity Card Number"
+          placeholder="0012233445566778"
+          value={profile.idCardNumber}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
         />
       </div>
+
+      <TextareaField
+        id="address"
+        label="Address"
+        placeholder="Enter your full address"
+        value={profile.address}
+        onChange={handleChange}
+        required
+        disabled={isLoading}
+        rows={4}
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="city">City</Label>
-          <Input id="city" name="city" placeholder="City" required disabled={isLoading} />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="state">State/Province</Label>
-          <Input id="state" name="state" placeholder="State/Province" required disabled={isLoading} />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="zipCode">Zip/Postal Code</Label>
-          <Input id="zipCode" name="zipCode" placeholder="Zip/Postal Code" required disabled={isLoading} />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="bio">Bio</Label>
-        <Textarea
-          id="bio"
-          name="bio"
-          placeholder="Tell us about yourself, your skills, and experience"
+        <FormField
+          id="city"
+          label="City"
+          placeholder="City"
+          value={profile.city}
+          onChange={handleChange}
+          required
           disabled={isLoading}
-          className="min-h-[150px]"
+        />
+
+        <FormField
+          id="stateProvince"
+          label="State/Province"
+          placeholder="State/Province"
+          value={profile.stateProvince}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
+        />
+
+        <FormField
+          id="postalCode"
+          label="Zip/Postal Code"
+          placeholder="Zip/Postal Code"
+          value={profile.postalCode}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
         />
       </div>
+
+      <TextareaField
+        id="bio"
+        label="Bio"
+        placeholder="Tell us about yourself, your skills, and experience"
+        disabled={isLoading}
+        value={profile.bio}
+        onChange={handleChange}
+        rows={6}
+      />
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Saving..." : "Save Profile"}
@@ -123,3 +210,72 @@ export function ProfileForm({token,data_user}: {token:string;data_user:any}) {
     </form>
   )
 }
+
+// Helper component for input fields
+const FormField = ({
+  id,
+  label,
+  placeholder,
+  value,
+  onChange,
+  required = false,
+  disabled = false,
+}: {
+  id: string
+  label: string
+  placeholder: string
+  value?: any
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  required?: boolean
+  disabled?: boolean
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor={id}>{label}</Label>
+    <Input
+      id={id}
+      name={id}
+      placeholder={placeholder}
+      required={required}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+    />
+  </div>
+)
+
+
+
+// Helper component for textarea fields
+const TextareaField = ({
+  id,
+  label,
+  placeholder,
+  value,
+  onChange,
+  required = false,
+  disabled = false,
+  rows = 4,
+}: {
+  id: string
+  label: string
+  placeholder: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  required?: boolean
+  disabled?: boolean
+  rows?: number
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor={id}>{label}</Label>
+    <Textarea
+      id={id}
+      name={id}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      required={required}
+      disabled={disabled}
+      className={`min-h-[${rows * 25}px]`}
+    />
+  </div>
+)

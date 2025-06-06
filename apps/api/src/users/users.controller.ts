@@ -1,7 +1,8 @@
 import { 
   Controller, 
   Post, 
-  Get, 
+  Get,
+  Patch, 
   Body, 
   Query, 
   HttpCode,
@@ -12,11 +13,15 @@ import {
   Logger,
   Param, ParseIntPipe,
   BadRequestException,
-  UnauthorizedException
+  UnauthorizedException,
+  UploadedFile,
+  UseInterceptors,
+
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { JobsService } from '../jobs/jobs.service';
 import { CreateUserDto } from './dto/register.dto';
-import { CreateUserProfileDto } from './dto/create-profile.dto';
+import { CreateUserProfileDto, UpdateUserProfileDto } from './dto/create-profile.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import * as crypto from 'crypto';
 
@@ -24,6 +29,7 @@ import * as crypto from 'crypto';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
+    private readonly jobsService: JobsService,
     ) {}
 
   @Post('register')
@@ -102,6 +108,22 @@ export class UsersController {
     return this.usersService.dashboardService(req.user)
   }
 
+  @Post('apply-job')
+  @UseGuards(JwtAuthGuard)
+  async applyJob(
+      @Req() req,
+      @Body() body:any
+    ){
+    const userId = req.user.id;
+    const dto = {
+      jobId: parseInt(body.jobId, 10), // karena dari FormData, semua string
+      coverLetter: body.coverLetter,
+      applicantId: userId,
+      resumePath: "", // asumsi kamu simpan path file
+    };
+    return this.jobsService.userApplyJob(dto)
+  }
+
   @Post('resend-verification')
   async resendVerification(@Body() body: { email: string }) {
     const user = await this.usersService.userFindOne({ where: { email: body.email } });
@@ -129,6 +151,7 @@ export class UsersController {
       message: 'Verification email resent successfully'
     };
   }
+  
   @Post('profile/:userId')
   async create(
     @Param('userId', ParseIntPipe) userId: number,
@@ -140,4 +163,14 @@ export class UsersController {
       message: 'Profile successfully created!'
     } 
   }
+  @Patch('profile/:userId')
+  async updateProfile(@Param('userId', ParseIntPipe) userId: number,
+    @Body() updateDto: UpdateUserProfileDto){
+    const updated = await this.usersService.updateProfile(userId, updateDto);
+    return {
+      message: 'Profile updated successfully',
+      data: updated,
+    };
+  }
+
 }

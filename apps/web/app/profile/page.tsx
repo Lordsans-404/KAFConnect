@@ -39,6 +39,7 @@ export default function ProfilePage() {
         } else {
           alert("Token invalid atau expired. Silakan login ulang.")
           window.location.href = "/"
+          return
         }
       } catch (err) {
         console.error("Failed to fetch profile", err)
@@ -157,7 +158,7 @@ export default function ProfilePage() {
           <Tabs defaultValue="personal" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="personal">Personal Information</TabsTrigger>
-              <TabsTrigger value="preferences">Preferences</TabsTrigger>
+              {profile && <TabsTrigger value="edit-profile">Edit Profile Information</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="personal">
@@ -182,16 +183,14 @@ export default function ProfilePage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="preferences">
+            <TabsContent value="edit-profile">
               <Card>
                 <CardHeader>
-                  <CardTitle>Job Preferences</CardTitle>
-                  <CardDescription>Set your job preferences to get better recommendations</CardDescription>
+                  <CardTitle>Edit Your Informations</CardTitle>
+                  <CardDescription>Set your profile to get better recommendations</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
-                    Please complete your personal information first before setting job preferences.
-                  </p>
+                  <ProfileForm token={token} data_user={data}/>
                 </CardContent>
               </Card>
             </TabsContent>

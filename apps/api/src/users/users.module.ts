@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -6,7 +6,7 @@ import { User, UserProfile } from './users.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailModule } from '../email/email.module';
-import { JobsService } from '../jobs/jobs.service';
+import { JobsModule } from '../jobs/jobs.module';
 import { Job, JobApplication } from '../jobs/jobs.entity';
 
 
@@ -14,7 +14,7 @@ import { Job, JobApplication } from '../jobs/jobs.entity';
   imports: [
     TypeOrmModule.forFeature([User, UserProfile]),
     TypeOrmModule.forFeature([Job, JobApplication]),
-    
+    forwardRef(()=>JobsModule),
     EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -27,6 +27,6 @@ import { Job, JobApplication } from '../jobs/jobs.entity';
     ConfigModule.forRoot(),
     ],
   controllers: [UsersController],
-  providers: [UsersService,JobsService]
+  providers: [UsersService]
 })
 export class UsersModule {}

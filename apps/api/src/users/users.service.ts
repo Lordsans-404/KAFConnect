@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserProfile } from './users.entity';
 import { CreateUserDto, RegisterResponseDto } from './dto/register.dto';
-import { CreateUserProfileDto } from './dto/create-profile.dto';
+import { CreateUserProfileDto,UpdateUserProfileDto } from './dto/create-profile.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
@@ -97,8 +97,9 @@ export class UsersService {
 
   async dashboardService(req: any) {
     const profile = await this.profileByUserId(req.id);
-    const jobs = await this.jobsService.getAllJobs();
-    return { profile, jobs };
+    const jobs = await this.jobsService.getUnappliedJobs(req.id)
+    const appliedJobs = await this.jobsService.getAppliedJobs(req.id)
+    return { profile, jobs,appliedJobs };
   }
 
   async sendVerificationEmail(email: string, token: string) {
@@ -127,6 +128,30 @@ export class UsersService {
     });
 
     return this.userProfileRepository.save(profile);
+  }
+
+  async updateProfile(userId: number, updateProfileDto:UpdateUserProfileDto){
+  const user = await this.userRepo.findOne({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new NotFoundException('User not found');
+  }
+
+  let profile = await this.userProfileRepository.findOne({
+    where: { user: { id: userId } },
+    relations: ['user'],
+  });
+
+  if (!profile) {
+    throw new NotFoundException('User profile not found');
+  }
+
+  // Update hanya field yang dikirim
+  Object.assign(profile, updateProfileDto);
+
+  return await this.userProfileRepository.save(profile);
   }
 
   // ========================================

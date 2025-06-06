@@ -74,6 +74,7 @@ export default function Dashboard() {
 
         if (res.ok) {
           setData(json)
+          setIsLoading(false);
         } else {
           alert("Token invalid atau expired. Silakan login ulang.")
           router.push('/')

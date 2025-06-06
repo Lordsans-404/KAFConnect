@@ -4,7 +4,7 @@ import { UsersService } from '../users/users.service';
 import { JobsService } from '../jobs/jobs.service';
 import { AdminController } from './admin.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Job } from '../jobs/jobs.entity';
+import { Job,JobApplication } from '../jobs/jobs.entity';
 import { User, UserProfile } from '../users/users.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -13,7 +13,7 @@ import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Job, User, UserProfile]),
+    TypeOrmModule.forFeature([Job,JobApplication, User, UserProfile]),
     EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -25,6 +25,7 @@ import {
   Sun,
   Upload,
   Phone,
+  Warehouse
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -63,6 +64,7 @@ export default function UserDashboard() {
         if (!res.ok) {
           alert("Token invalid atau expired. Silakan login ulang.");
           window.location.href = "/"
+          return
         }
         try{
           const data = await res.json();
@@ -100,7 +102,7 @@ export default function UserDashboard() {
     setTheme(prevTheme => (prevTheme === "dark" ? "light" : "dark"));
   };
 
-   // Format date
+  // Format date
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -112,8 +114,8 @@ export default function UserDashboard() {
   const userData = {
     name: user?.name || "Guest",
     email: user?.email || "not provided",
-    location: data?.address || "not provided",
-    phone: data?.phoneNumber || "not provided",
+    location: data?.profile.address || "not provided",
+    phone: data?.profile.phoneNumber || "not provided",
     isVerified: user?.isVerified,
   };
   return (
@@ -326,7 +328,7 @@ export default function UserDashboard() {
                       </div>
                     </div>
                     <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
-                      <div className="text-2xl font-bold">{data?.jobs.length}</div>
+                      <div className="text-2xl font-bold">{data?.appliedJobs.length}</div>
                       <div className="text-xs">Active Applications</div>
                     </div>
                   </div>
@@ -360,50 +362,13 @@ export default function UserDashboard() {
                     </CardHeader>
                     <CardContent className="p-0">
                       <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                      {data?.appliedJobs.map((appJob,index) =>(  
                         <ApplicationItem
-                          company="TechCorp Inc."
-                          position="Senior Frontend Developer"
-                          logo="/placeholder.svg?height=40&width=40"
-                          status="Interview"
-                          date="Applied 1 week ago"
-                          statusColor="purple"
-                          updates="Interview scheduled for tomorrow at 2:00 PM"
+                          key={index}
+                          appliedJob={appJob}
                         />
-                        <ApplicationItem
-                          company="InnovateSoft"
-                          position="Full Stack Engineer"
-                          logo="/placeholder.svg?height=40&width=40"
-                          status="Application Review"
-                          date="Applied 2 weeks ago"
-                          statusColor="blue"
-                          updates="Your application is being reviewed by the hiring team"
-                        />
-                        <ApplicationItem
-                          company="DataViz Solutions"
-                          position="React Developer"
-                          logo="/placeholder.svg?height=40&width=40"
-                          status="Assessment"
-                          date="Applied 5 days ago"
-                          statusColor="amber"
-                          updates="Technical assessment sent to your email"
-                        />
-                        <ApplicationItem
-                          company="CloudNine Systems"
-                          position="JavaScript Engineer"
-                          logo="/placeholder.svg?height=40&width=40"
-                          status="Application Submitted"
-                          date="Applied 3 days ago"
-                          statusColor="cyan"
-                        />
-                        <ApplicationItem
-                          company="Quantum Software"
-                          position="Frontend Team Lead"
-                          logo="/placeholder.svg?height=40&width=40"
-                          status="Not Selected"
-                          date="Applied 1 month ago"
-                          statusColor="slate"
-                          updates="Thank you for your interest. We've decided to move forward with other candidates."
-                        />
+                        ))
+                      }
                       </div>
                     </CardContent>
                     <CardFooter className="flex justify-center p-4">
@@ -430,12 +395,8 @@ export default function UserDashboard() {
                         {data?.jobs.slice(0,3).map((job,index) =>(
                           <JobItem
                             key={index}
-                            company={job.department}
-                            position={job.title}
-                            logo="/placeholder.svg?height=40&width=40"
-                            location={job.location}
-                            salary={job.salaryRange}
-                            posted={timeAgo(new Date(job.postedAt))}
+                            token={token}
+                            job={job}
                             match={95}
                           />
                           ))
@@ -462,27 +423,50 @@ export default function UserDashboard() {
   )
 }
 
+// Apply Job
+async function applyForJob(id: JobId, token: string | null) {
+  // const token = localStorage.getItem("token");
+  try{
+    console.log(id)
+    const response = await fetch('http://localhost:3000/users/apply-job', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}` // kirim token untuk auth
+      },
+      body: JSON.stringify({
+        jobId: id,
+        coverLetter: "Saya tertarik dengan posisi ini...",
+        resumePath: ""
+      })
+    });
+    if (!response.ok) {
+      // Handle error responses (400, 409, dll)
+      if (response.status === 409) {
+        alert("Anda sudah melamar pekerjaan ini sebelumnya")
+        throw new Error("Anda sudah melamar pekerjaan ini sebelumnya");
+      }
+      throw new Error(data.message || "Gagal mengirim lamaran");
+    }
+  }
+  catch(error){
+    console.error("Failed to apply job", error);
+    setMessage(error.message);
+  }
+  
+}
+
 // Application item component
 function ApplicationItem({
-  company,
-  position,
-  logo,
-  status,
-  date,
-  statusColor,
-  updates,
+  appliedJob,
 }: {
-  company: string
-  position: string
-  logo: string
-  status: string
-  date: string
-  statusColor: string
-  updates?: string
+  appliedJob:any
 }) {
+  const logo="/placeholder.svg?height=40&width=40"
+  const posted = timeAgo(new Date(appliedJob.applicationDate))
   const getStatusColor = () => {
-    switch (statusColor) {
-      case "cyan":
+    switch (appliedJob.status) {
+      case "submitted":
         return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100"
       case "blue":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
@@ -503,21 +487,40 @@ function ApplicationItem({
     <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30">
       <div className="flex items-start gap-4">
         <Avatar className="h-10 w-10 rounded-md">
-          <AvatarImage src={logo || "/placeholder.svg"} alt={company} className="rounded-md" />
+          <AvatarImage src={logo || "/placeholder.svg"} alt={appliedJob.job.department} className="rounded-md" />
           <AvatarFallback className="rounded-md bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
-            {company.charAt(0)}
+            {appliedJob.job.department.charAt(0) || "X"}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{position}</div>
-            <Badge className={getStatusColor()}>{status}</Badge>
+            <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{appliedJob.job.position}</div>
+            <Badge className={getStatusColor()}>{appliedJob.status}</Badge>
           </div>
-          <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">{company}</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">{date}</div>
-          {updates && (
+          <div className="text-sm text-slate-500 dark:text-slate-400 mb-1 font-semibold">
+            <div className="flex items-center">
+              <Warehouse className="h-4 w-4 mr-1" />
+              {appliedJob.job.department}
+            </div>
+          </div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center">
+              <MapPin className="h-3 w-3 mr-1" />
+              {appliedJob.job.location}
+            </div>
+          </div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between">
+              <div></div>
+              <div className="flex items-center">
+                <Calendar className="h-4 w-4 mr-1" />
+                {posted}
+              </div>
+            </div>
+          </div>
+          {appliedJob.updates && (
             <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-700/30 rounded-md text-xs text-slate-600 dark:text-slate-300 border-l-2 border-cyan-500">
-              {updates}
+              {appliedJob.updates}
             </div>
           )}
         </div>
@@ -538,46 +541,39 @@ function ApplicationItem({
 
 // Job item component
 function JobItem({
-  company,
-  position,
-  logo,
-  location,
-  salary,
-  posted,
+  token,
+  job,
   match,
 }: {
-  company: string
-  position: string
-  logo: string
-  location: string
-  salary: string
-  posted: string
+  token:string
+  job:any
   match: number
 }) {
-
+  const logo="/placeholder.svg?height=40&width=40"
+  const posted = timeAgo(new Date(job.postedAt))
   return (
     <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30">
       <div className="flex items-start gap-4">
         <Avatar className="h-10 w-10 rounded-md">
-          <AvatarImage src={logo || "/placeholder.svg"} alt={company} className="rounded-md" />
+          <AvatarImage src={logo || "/placeholder.svg"} alt={job.department} className="rounded-md" />
           <AvatarFallback className="rounded-md bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
-            {company.charAt(0)}
+            {job.department.charAt(0)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{position}</div>
+            <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{job.title}</div>
             <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">{match}% Match</Badge>
           </div>
-          <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">{company}</div>
+          <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">{job.department}</div>
           <div className="flex flex-wrap gap-y-1 gap-x-4 text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center">
               <MapPin className="h-3 w-3 mr-1" />
-              {location}
+              {job.location}
             </div>
             <div className="flex items-center">
               <Briefcase className="h-3 w-3 mr-1" />
-              {salary}$
+              {job.salaryRange}$
             </div>
             <div className="flex items-center">
               <Clock className="h-3 w-3 mr-1" />
@@ -590,6 +586,7 @@ function JobItem({
         <Button
           variant="outline"
           size="sm"
+          onClick={() => applyForJob(job.id,token)}
           className="h-8 text-xs border-cyan-500 bg-cyan-50 text-cyan-600 hover:bg-cyan-100 dark:border-cyan-600 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/30"
         >
           Apply Now
