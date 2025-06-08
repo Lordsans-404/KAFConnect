@@ -58,6 +58,7 @@ export function ProfileForm({ token, data_user }: ProfileFormProps) {
     event.preventDefault()
     setIsLoading(true)
 
+    // Untuk menghandle Update
     if(data_user?.profile){
       try {
         const response = await fetch(
@@ -72,26 +73,25 @@ export function ProfileForm({ token, data_user }: ProfileFormProps) {
           }
         );
 
-        if (!response.ok) throw new Error("Failed to update profile");
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(errorData.message.join('\n')); // atau tampilkan di UI
+          throw new Error("Validation failed");
+        }
 
         alert("Profile updated successfully!");
         router.push('/dashboard');
       } catch (error) {
-        alert("Failed to update profile. Please try again.");
+        console.log("Error :",error)
       } finally {
         setIsLoading(false);
       }
     }
+    // Untuk menghandle Create
     else{
       try {
         const formData = new FormData(event.currentTarget)
         const formValues = Object.fromEntries(formData.entries()) as Record<string, string>
-
-        // Validate ID number
-        if (formValues.idCardNumber.length !== 16) {
-          alert("ID Number must be 16 characters long")
-          return
-        }
 
         const profileData: ProfileData = {
           phoneNumber: formValues.phoneNumber,
@@ -115,12 +115,16 @@ export function ProfileForm({ token, data_user }: ProfileFormProps) {
           }
         )
 
-        if (!response.ok) throw new Error("Failed to save profile")
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(errorData.message.join('\n')); // atau tampilkan di UI
+          throw new Error("Validation failed");
+        }
 
         alert("Profile submitted successfully!")
         router.push('/dashboard')
       } catch (error) {
-        alert("Failed to save profile. Please try again.")
+        console.log("Error :",error)
       } finally {
         setIsLoading(false)
       }

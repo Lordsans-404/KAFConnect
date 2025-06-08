@@ -1,10 +1,8 @@
 "use client"
+import type { User } from "@/types/user" // Declare the User variable
 
-import type React from "react"
-
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState } from "react"
 import {
-  ArrowUpRight,
   Bell,
   Briefcase,
   Calendar,
@@ -13,19 +11,15 @@ import {
   Edit,
   Eye,
   FileText,
-  Heart,
-  HelpCircle,
   Mail,
   MapPin,
-  MessageSquare,
   Moon,
   MoreHorizontal,
-  PieChart,
   Search,
   Sun,
   Upload,
   Phone,
-  Warehouse
+  Warehouse,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -34,73 +28,73 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
+import { ApplicationDialog } from "@/components/applicant-form"
 
 export default function UserDashboard() {
-  const [theme, setTheme] = useState<"dark" | "light">("light");
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState<any>(null);
-  const [user, setUser ] = useState<User | null>(null);
-  const [message, setMessage] = useState('');
-  const [token, setToken] = useState<string | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light">("light")
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const [isLoading, setIsLoading] = useState(true)
+  const [data, setData] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [message, setMessage] = useState("")
+  const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadDashboard() {
-      const token = localStorage.getItem("token");
-      setToken(token);
+      const token = localStorage.getItem("token")
+      setToken(token)
       if (!token) {
-        alert("Silakan login dulu");
-        window.location.href = "/";
-        return;
+        alert("Silakan login dulu")
+        window.location.href = "/"
+        return
       }
 
       try {
         const res = await fetch("http://localhost:3000/users/dashboard", {
           headers: { Authorization: "Bearer " + token },
-        });
+        })
 
         if (!res.ok) {
-          alert("Token invalid atau expired. Silakan login ulang.");
+          alert("Token invalid atau expired. Silakan login ulang.")
           window.location.href = "/"
           return
         }
-        try{
-          const data = await res.json();
-          setData(data);
-          setUser (data.profile.user || null);
+        try {
+          const data = await res.json()
+          setData(data)
+          setUser(data.profile.user || null)
           console.log(data)
-          setIsLoading(false);
-        } catch(err){
+          setIsLoading(false)
+        } catch (err) {
           alert("Sorry we couldn't find your data")
-          window.location.href = "/profile";
+          window.location.href = "/profile"
           return
         }
       } catch (err) {
-        console.error("Failed to fetch profile", err);
-        setMessage(err.message);
+        console.error("Failed to fetch profile", err)
+        setMessage(err.message)
         alert("Your token is invalid!")
-        window.location.href = "/";
+        window.location.href = "/"
       }
     }
 
-    loadDashboard();
-  }, []);
+    loadDashboard()
+  }, [])
 
   // Update time
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+      setCurrentTime(new Date())
+    }, 1000)
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
 
   // Toggle theme
   const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === "dark" ? "light" : "dark"));
-  };
+    setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"))
+  }
 
   // Format date
   const formatDate = (date: Date) => {
@@ -110,14 +104,14 @@ export default function UserDashboard() {
       day: "numeric",
     })
   }
-
   const userData = {
     name: user?.name || "Guest",
     email: user?.email || "not provided",
     location: data?.profile.address || "not provided",
     phone: data?.profile.phoneNumber || "not provided",
     isVerified: user?.isVerified,
-  };
+  }
+
   return (
     <div
       className={`${theme} min-h-screen bg-gradient-to-br ${
@@ -227,7 +221,9 @@ export default function UserDashboard() {
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <div className="text-sm text-slate-600 dark:text-slate-400">Profile Completion</div>
-                        <div className="text-sm text-cyan-600 dark:text-cyan-400">{userData.isVerified ? "Completed":"Unverified"}</div>
+                        <div className="text-sm text-cyan-600 dark:text-cyan-400">
+                          {userData.isVerified ? "Completed" : "Unverified"}
+                        </div>
                       </div>
                     </div>
 
@@ -263,7 +259,7 @@ export default function UserDashboard() {
                     </Button>
                   </Link>
                 </CardFooter>
-              </Card> 
+              </Card>
 
               {/* Documents */}
               <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -362,13 +358,9 @@ export default function UserDashboard() {
                     </CardHeader>
                     <CardContent className="p-0">
                       <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                      {data?.appliedJobs.map((appJob,index) =>(  
-                        <ApplicationItem
-                          key={index}
-                          appliedJob={appJob}
-                        />
-                        ))
-                      }
+                        {data?.appliedJobs.map((appJob, index) => (
+                          <ApplicationItem key={index} appliedJob={appJob} />
+                        ))}
                       </div>
                     </CardContent>
                     <CardFooter className="flex justify-center p-4">
@@ -392,16 +384,9 @@ export default function UserDashboard() {
                     </CardHeader>
                     <CardContent className="p-0">
                       <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {data?.jobs.slice(0,3).map((job,index) =>(
-                          <JobItem
-                            key={index}
-                            token={token}
-                            job={job}
-                            match={95}
-                          />
-                          ))
-                        }
-
+                        {data?.jobs.slice(0, 3).map((job, index) => (
+                          <JobItem key={index} token={token} job={job} match={95} />
+                        ))}
                       </div>
                     </CardContent>
                     <CardFooter className="flex justify-center p-4">
@@ -423,46 +408,13 @@ export default function UserDashboard() {
   )
 }
 
-// Apply Job
-async function applyForJob(id: JobId, token: string | null) {
-  // const token = localStorage.getItem("token");
-  try{
-    console.log(id)
-    const response = await fetch('http://localhost:3000/users/apply-job', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}` // kirim token untuk auth
-      },
-      body: JSON.stringify({
-        jobId: id,
-        coverLetter: "Saya tertarik dengan posisi ini...",
-        resumePath: ""
-      })
-    });
-    if (!response.ok) {
-      // Handle error responses (400, 409, dll)
-      if (response.status === 409) {
-        alert("Anda sudah melamar pekerjaan ini sebelumnya")
-        throw new Error("Anda sudah melamar pekerjaan ini sebelumnya");
-      }
-      throw new Error(data.message || "Gagal mengirim lamaran");
-    }
-  }
-  catch(error){
-    console.error("Failed to apply job", error);
-    setMessage(error.message);
-  }
-  
-}
-
 // Application item component
 function ApplicationItem({
   appliedJob,
 }: {
-  appliedJob:any
+  appliedJob: any
 }) {
-  const logo="/placeholder.svg?height=40&width=40"
+  const logo = "/placeholder.svg?height=40&width=40"
   const posted = timeAgo(new Date(appliedJob.applicationDate))
   const getStatusColor = () => {
     switch (appliedJob.status) {
@@ -487,14 +439,14 @@ function ApplicationItem({
     <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30">
       <div className="flex items-start gap-4">
         <Avatar className="h-10 w-10 rounded-md">
-          <AvatarImage src={logo || "/placeholder.svg"} alt={appliedJob.job.department} className="rounded-md" />
+          <AvatarImage src={logo || "/placeholder.svg"} alt={appliedJob.job.title} className="rounded-md" />
           <AvatarFallback className="rounded-md bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
-            {appliedJob.job.department.charAt(0) || "X"}
+            {appliedJob.job.title.charAt(0) || "X"}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{appliedJob.job.position}</div>
+            <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{appliedJob.job.title}</div>
             <Badge className={getStatusColor()}>{appliedJob.status}</Badge>
           </div>
           <div className="text-sm text-slate-500 dark:text-slate-400 mb-1 font-semibold">
@@ -545,12 +497,19 @@ function JobItem({
   job,
   match,
 }: {
-  token:string
-  job:any
+  token: string
+  job: any
   match: number
 }) {
-  const logo="/placeholder.svg?height=40&width=40"
+  const logo = "/placeholder.svg?height=40&width=40"
   const posted = timeAgo(new Date(job.postedAt))
+
+  // Handle successful application submission
+  const handleApplicationSuccess = (data: any) => {
+    console.log("Application submitted successfully:", data)
+    // You can add additional logic here if needed
+  }
+
   return (
     <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30">
       <div className="flex items-start gap-4">
@@ -572,8 +531,7 @@ function JobItem({
               {job.location}
             </div>
             <div className="flex items-center">
-              <Briefcase className="h-3 w-3 mr-1" />
-              {job.salaryRange}$
+              <Briefcase className="h-3 w-3 mr-1" />${job.salaryRange}
             </div>
             <div className="flex items-center">
               <Clock className="h-3 w-3 mr-1" />
@@ -583,165 +541,37 @@ function JobItem({
         </div>
       </div>
       <div className="flex justify-end mt-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => applyForJob(job.id,token)}
-          className="h-8 text-xs border-cyan-500 bg-cyan-50 text-cyan-600 hover:bg-cyan-100 dark:border-cyan-600 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/30"
-        >
-          Apply Now
-        </Button>
+        <ApplicationDialog
+          job={{
+            id: job.id,
+            title: job.title,
+            department: job.department,
+            location: job.location,
+            salaryRange: job.salaryRange,
+          }}
+          token={token}
+          onSubmit={handleApplicationSuccess}
+        />
       </div>
-    </div>
-  )
-}
-
-// Interview item component
-function InterviewItem({
-  company,
-  position,
-  logo,
-  date,
-  type,
-  interviewers,
-  location,
-}: {
-  company: string
-  position: string
-  logo: string
-  date: string
-  type: string
-  interviewers: string[]
-  location: string
-}) {
-  return (
-    <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700">
-      <div className="flex items-start gap-4">
-        <Avatar className="h-10 w-10 rounded-md">
-          <AvatarImage src={logo || "/placeholder.svg"} alt={company} className="rounded-md" />
-          <AvatarFallback className="rounded-md bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
-            {company.charAt(0)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <div className="font-medium text-slate-800 dark:text-slate-200 mb-1">{position}</div>
-          <div className="text-sm text-slate-500 dark:text-slate-400 mb-2">{company}</div>
-          <div className="space-y-1 text-sm">
-            <div className="flex items-center text-slate-600 dark:text-slate-300">
-              <Calendar className="h-4 w-4 mr-2 text-cyan-600 dark:text-cyan-400" />
-              {date}
-            </div>
-            <div className="flex items-center text-slate-600 dark:text-slate-300">
-              <Briefcase className="h-4 w-4 mr-2 text-cyan-600 dark:text-cyan-400" />
-              {type}
-            </div>
-            <div className="flex items-center text-slate-600 dark:text-slate-300">
-              <MapPin className="h-4 w-4 mr-2 text-cyan-600 dark:text-cyan-400" />
-              {location}
-            </div>
-          </div>
-          {interviewers && interviewers.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
-              <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Interviewers:</div>
-              <div className="text-sm text-slate-600 dark:text-slate-300">
-                {interviewers.map((interviewer, index) => (
-                  <div key={index}>{interviewer}</div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="flex justify-end mt-3 space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 text-xs border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
-        >
-          Reschedule
-        </Button>
-        <Button
-          size="sm"
-          className="h-8 text-xs bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-600 dark:hover:bg-cyan-700"
-        >
-          Prepare
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-// Activity item component
-function ActivityItem({
-  title,
-  description,
-  time,
-  icon: Icon,
-  iconColor,
-}: {
-  title: string
-  description: string
-  time: string
-  icon: React.ElementType
-  iconColor: string
-}) {
-  return (
-    <div className="flex gap-3">
-      <div className={`mt-0.5 p-1.5 rounded-full bg-slate-100 dark:bg-slate-700 ${iconColor}`}>
-        <Icon className="h-4 w-4" />
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center justify-between">
-          <div className="font-medium text-slate-800 dark:text-slate-200">{title}</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">{time}</div>
-        </div>
-        <div className="text-sm text-slate-600 dark:text-slate-300 mt-1">{description}</div>
-      </div>
-    </div>
-  )
-}
-
-// Resource item component
-function ResourceItem({
-  title,
-  description,
-  icon: Icon,
-}: {
-  title: string
-  description: string
-  icon: React.ElementType
-}) {
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/30">
-      <div className="p-1.5 rounded-md bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div>
-        <div className="font-medium text-slate-800 dark:text-slate-200 text-sm">{title}</div>
-        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</div>
-      </div>
-      <Button variant="ghost" size="sm" className="ml-auto h-7 w-7 p-0">
-        <ArrowUpRight className="h-4 w-4" />
-      </Button>
     </div>
   )
 }
 
 // Helper to format time ago
 function timeAgo(date: Date): string {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000)
   const intervals = [
-    { label: 'year', seconds: 31536000 },
-    { label: 'month', seconds: 2592000 },
-    { label: 'week', seconds: 604800 },
-    { label: 'day', seconds: 86400 },
-    { label: 'hour', seconds: 3600 },
-    { label: 'minute', seconds: 60 },
-  ];
+    { label: "year", seconds: 31536000 },
+    { label: "month", seconds: 2592000 },
+    { label: "week", seconds: 604800 },
+    { label: "day", seconds: 86400 },
+    { label: "hour", seconds: 3600 },
+    { label: "minute", seconds: 60 },
+  ]
 
   for (const interval of intervals) {
-    const count = Math.floor(seconds / interval.seconds);
-    if (count > 0) return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
+    const count = Math.floor(seconds / interval.seconds)
+    if (count > 0) return `${count} ${interval.label}${count > 1 ? "s" : ""} ago`
   }
-  return 'Just now';
+  return "Just now"
 }

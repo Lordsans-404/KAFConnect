@@ -66,8 +66,7 @@ export class UpdateUserProfileDto {
 
   @IsOptional()
   @IsString()
-  @Length(5, 5, { message: 'Postal code must be 5 digits' })
-  @Matches(/^[0-9]+$/, { message: 'Postal code must contain digits only' })
+  @Matches(/^\d{5}$/, {message: 'Postal code must be exactly 5 digits and contain digits only'})
   postalCode?: string;
 
   @IsOptional()

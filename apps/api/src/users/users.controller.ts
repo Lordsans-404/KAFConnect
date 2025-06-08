@@ -23,6 +23,9 @@ import { JobsService } from '../jobs/jobs.service';
 import { CreateUserDto } from './dto/register.dto';
 import { CreateUserProfileDto, UpdateUserProfileDto } from './dto/create-profile.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express'
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import * as crypto from 'crypto';
 
 @Controller('users')
@@ -110,16 +113,30 @@ export class UsersController {
 
   @Post('apply-job')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads/resume-user',
+      filename: (req, file, cb) => {
+        const userId = req.user?.id; // Get user ID from the request
+        const jobId = req.body?.jobId; // Get job ID from the body
+        const uniqueSuffix = Date.now();
+        const fileExtName = extname(file.originalname);
+        const newFilename = `user-${userId}-job-${jobId}-${uniqueSuffix}${fileExtName}`;
+        cb(null, newFilename);
+      },
+    }),
+  }))
   async applyJob(
       @Req() req,
-      @Body() body:any
+      @Body() body:any,
+      @UploadedFile() file: Express.Multer.File
     ){
     const userId = req.user.id;
     const dto = {
       jobId: parseInt(body.jobId, 10), // karena dari FormData, semua string
       coverLetter: body.coverLetter,
       applicantId: userId,
-      resumePath: "", // asumsi kamu simpan path file
+      resumePath: file.path, // asumsi kamu simpan path file
     };
     return this.jobsService.userApplyJob(dto)
   }
