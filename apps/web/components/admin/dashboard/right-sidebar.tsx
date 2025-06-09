@@ -1,0 +1,64 @@
+"use client"
+
+import { Calendar, FileText } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+import { StatBox } from "@/components/admin/dashboard/stat-box"
+import { ActionButton } from "@/components/admin/dashboard/action-button"
+import { CreateJob } from "@/components/create-job"
+import { CreateStaff } from "@/components/create-staff"
+
+interface RightSidebarProps {
+  data: any
+  currentTime: Date
+  formatDate: (date: Date) => string
+  token: string | null
+}
+
+export function RightSidebar({ data, currentTime, formatDate, token }: RightSidebarProps) {
+  const { all_users, users_by_profile } = data || {}
+
+  return (
+    <div className="col-span-12 lg:col-span-3">
+      <div className="grid gap-6">
+        {/* Today's Summary Card */}
+        <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 overflow-hidden">
+          <CardContent className="p-0">
+            <div className="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-slate-700 dark:to-slate-800 p-6 border-b border-slate-200 dark:border-slate-700">
+              <div className="text-center">
+                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1 font-medium">TODAY'S SUMMARY</div>
+                <div className="text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1">
+                  {formatDate(currentTime)}
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">8 tasks pending</div>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-2 gap-3">
+                <StatBox label="New Applications" value={4} />
+                <StatBox label="Interviews" value={1} />
+                <StatBox label="Verified Users" value={users_by_profile?.length || 0} />
+                <StatBox label="Users Count" value={all_users?.length || 0} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions Card */}
+        <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-slate-800 dark:text-slate-100 text-base">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              <CreateStaff />
+              <CreateJob token={token} />
+              <ActionButton icon={Calendar} label="Schedule" />
+              <ActionButton icon={FileText} label="Reports" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

@@ -15,7 +15,6 @@ import {
   MapPin,
   Moon,
   MoreHorizontal,
-  Search,
   Sun,
   Upload,
   Phone,
@@ -142,15 +141,6 @@ export default function UserDashboard() {
           </div>
 
           <div className="flex items-center space-x-6">
-            <div className="hidden md:flex items-center space-x-1 bg-white dark:bg-slate-800 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700">
-              <Search className="h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search jobs..."
-                className="bg-transparent border-none focus:outline-none text-sm w-40 placeholder:text-slate-400"
-              />
-            </div>
-
             <div className="flex items-center space-x-3">
               <TooltipProvider>
                 <Tooltip>
@@ -317,7 +307,7 @@ export default function UserDashboard() {
                   <div className="flex items-start justify-between">
                     <div>
                       <h2 className="text-xl font-bold mb-1">Welcome back, {userData.name}!</h2>
-                      <p className="text-cyan-100 mb-4">Your job search dashboard is ready for you.</p>
+                      <p className="text-cyan-100 mb-4">Your dashboard is ready for you.</p>
                       <div className="flex items-center text-sm text-cyan-100">
                         <Calendar className="h-4 w-4 mr-1" />
                         {formatDate(currentTime)}
@@ -390,12 +380,13 @@ export default function UserDashboard() {
                       </div>
                     </CardContent>
                     <CardFooter className="flex justify-center p-4">
-                      <Button
+                      <Link
                         variant="outline"
+                        href="/job-list"
                         className="border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
                       >
                         View More Jobs
-                      </Button>
+                      </Link>
                     </CardFooter>
                   </Card>
                 </TabsContent>
@@ -419,19 +410,20 @@ function ApplicationItem({
   const getStatusColor = () => {
     switch (appliedJob.status) {
       case "submitted":
-        return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100"
+        return "bg-cyan-100 hover:bg-cyan-200 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100";
       case "blue":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
+        return "bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-100";
       case "purple":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100"
+        return "bg-purple-100 hover:bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-100";
       case "amber":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100"
+        return "bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-100";
       case "green":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+        return "bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-100";
       case "red":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+        return "bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-100";
       default:
-        return "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300"
+        return "bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300";
+
     }
   }
 
@@ -511,7 +503,7 @@ function JobItem({
   }
 
   return (
-    <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30">
+    <div className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:shadow-lg dark:hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1">
       <div className="flex items-start gap-4">
         <Avatar className="h-10 w-10 rounded-md">
           <AvatarImage src={logo || "/placeholder.svg"} alt={job.department} className="rounded-md" />
@@ -522,7 +514,7 @@ function JobItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <div className="font-medium text-slate-800 dark:text-slate-200 truncate">{job.title}</div>
-            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">{match}% Match</Badge>
+            <Badge className="bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-100">{match}% Match</Badge>
           </div>
           <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">{job.department}</div>
           <div className="flex flex-wrap gap-y-1 gap-x-4 text-xs text-slate-500 dark:text-slate-400">
@@ -540,7 +532,8 @@ function JobItem({
           </div>
         </div>
       </div>
-      <div className="flex justify-end mt-3">
+      <div className="flex justify-between mt-3">
+        <div className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed truncate">{job.description}</div>
         <ApplicationDialog
           job={{
             id: job.id,

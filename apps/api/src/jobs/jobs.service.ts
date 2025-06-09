@@ -66,6 +66,11 @@ export class JobsService {
       .getMany();
   }
 
+  async getAllApplicants(){
+    return this.jobApplicationRepository.find({
+      relations: ["job", "userApplicant"]
+    }) || undefined
+  }
 
   async userApplyJob(dto:CreateJobApplicationDto){
     const job = await this.jobRepository.findOne({

@@ -24,7 +24,8 @@ export class AdminController {
     const users_by_profile = await this.usersService.getAllUsersWithProfiles()
     const all_users = await this.usersService.getAllRegisteredUsers()
     const all_jobs = await this.jobsService.getAllJobs()
-    return {profile:user_profile,users_by_profile,all_users,all_jobs};
+    const all_candidates = await this.jobsService.getAllApplicants()
+    return {profile:user_profile,users_by_profile,all_users,all_jobs,all_candidates};
   }
   
   @Post('new-job')
