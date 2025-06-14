@@ -18,7 +18,7 @@ export class JobsService {
     @InjectRepository(JobApplication)
       private readonly jobApplicationRepository: Repository<JobApplication>,
     @InjectRepository(User)
-      private readonly userRepo: Repository<User>,
+      private readonly userRepository: Repository<User>,
 
 	){}
 
@@ -79,7 +79,7 @@ export class JobsService {
     if (!job) {
       throw new NotFoundException('Pekerjaan tidak ditemukan.');
     }
-    const user = await this.userRepo.findOne({ where: { id: dto.applicantId } });
+    const user = await this.userRepository.findOne({ where: { id: dto.applicantId } });
     if (!user) {
       throw new NotFoundException('User tidak ditemukan.');
     }

@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, JoinColumn, Column, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { User } from '../users/users.entity';
-import { InterviewResult, Interview, Test } from '../evaluation/evaluation.entity';
+import { Test, Submission } from '../evaluation/evaluation.entity';
 
 export enum EmploymentType {
   FULL_TIME = 'full-time',
@@ -51,6 +51,10 @@ export class Job {
   @Column({ default: true })
   isActive: boolean;
 
+  @ManyToOne(() => Test)
+  @JoinColumn({name: 'testId'})
+  testId: Test;
+
   @OneToMany(() => JobApplication, application => application.job)
   applications: JobApplication[];
 }
@@ -91,9 +95,6 @@ export class JobApplication {
   @Column('text', { nullable: true })
   adminNotes: string;
 
-  @OneToOne(() => Test, test => test.totalScore)
-  testResult: Test;
-
-  @OneToOne(() => Interview, interview => interview.application)
-  interview: Interview;
+  @OneToOne(() => Submission, submission => submission.totalScore)
+  submissionResult: Submission;
 }

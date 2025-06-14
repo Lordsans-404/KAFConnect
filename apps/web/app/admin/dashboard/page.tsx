@@ -18,6 +18,7 @@ export default function Dashboard() {
   // Authentication and Data Fetch
   useEffect(() => {
     const storedToken = localStorage.getItem("token")
+    console.log(storedToken)
     setToken(storedToken)
     if (!storedToken) {
       alert("Please login first")
@@ -32,7 +33,7 @@ export default function Dashboard() {
         })
 
         const json = await res.json()
-        console.log("Fetched Data:", json)
+        // console.log("Fetched Data:", json)
 
         if (res.ok) {
           setData(json)

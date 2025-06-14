@@ -1,5 +1,4 @@
-"use client"
-
+import React, { useState } from 'react';
 import { Calendar, FileText } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -7,6 +6,8 @@ import { StatBox } from "@/components/admin/dashboard/stat-box"
 import { ActionButton } from "@/components/admin/dashboard/action-button"
 import { CreateJob } from "@/components/create-job"
 import { CreateStaff } from "@/components/create-staff"
+import { TestCreatorForm } from "@/components/admin/test-form"
+import { Button } from "@/components/ui/button"
 
 interface RightSidebarProps {
   data: any
@@ -16,8 +17,17 @@ interface RightSidebarProps {
 }
 
 export function RightSidebar({ data, currentTime, formatDate, token }: RightSidebarProps) {
-  const { all_users, users_by_profile } = data || {}
+  const { all_users, users_by_profile, profile, all_candidates, all_jobs } = data || {}
+  const [openDialogTest, setOpendDialogTest] = useState(false)
+  // console.log(profile?.user.id)
 
+  const aWeekAgo = new Date();
+  aWeekAgo.setDate(aWeekAgo.getDate() - 7);
+
+  const newCandidates = all_candidates?.filter(candidate => {
+    const applicationDate = new Date(candidate.applicationDate);
+    return applicationDate >= aWeekAgo;
+  });
   return (
     <div className="col-span-12 lg:col-span-3">
       <div className="grid gap-6">
@@ -35,15 +45,14 @@ export function RightSidebar({ data, currentTime, formatDate, token }: RightSide
             </div>
             <div className="p-4">
               <div className="grid grid-cols-2 gap-3">
-                <StatBox label="New Applications" value={4} />
-                <StatBox label="Interviews" value={1} />
+                <StatBox label="New Candidates" value={newCandidates?.length || 0} />
+                <StatBox label="All Candidates" value={all_candidates?.length || 0} />
                 <StatBox label="Verified Users" value={users_by_profile?.length || 0} />
-                <StatBox label="Users Count" value={all_users?.length || 0} />
+                <StatBox label="Jobs Count" value={all_jobs?.length || 0} />
               </div>
             </div>
           </CardContent>
         </Card>
-
         {/* Quick Actions Card */}
         <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
           <CardHeader className="pb-2">
@@ -53,11 +62,12 @@ export function RightSidebar({ data, currentTime, formatDate, token }: RightSide
             <div className="grid grid-cols-2 gap-3">
               <CreateStaff />
               <CreateJob token={token} />
-              <ActionButton icon={Calendar} label="Schedule" />
+              <ActionButton icon={FileText} label="New Test" onClick={() => setOpendDialogTest(true)} />
               <ActionButton icon={FileText} label="Reports" />
             </div>
           </CardContent>
         </Card>
+        <TestCreatorForm userId={profile?.user.id} token={token} open={openDialogTest} onOpenChange={setOpendDialogTest} />
       </div>
     </div>
   )

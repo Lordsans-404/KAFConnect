@@ -13,9 +13,18 @@ interface MainContentProps {
   data: any
   currentTime: Date
   formatDate: (date: Date) => string
+  token:any
 }
 
-export function MainContent({ data, currentTime, formatDate }: MainContentProps) {
+export function MainContent({ data, currentTime, formatDate,token }: MainContentProps) {
+  const {all_candidates} = data || {}
+  const aWeekAgo = new Date();
+  aWeekAgo.setDate(aWeekAgo.getDate() - 7);
+
+  const newCandidates = all_candidates?.filter(candidate => {
+    const applicationDate = new Date(candidate.applicationDate);
+    return applicationDate >= aWeekAgo;
+  });
   return (
     <div className="col-span-12 md:col-span-9 lg:col-span-7">
       <div className="grid gap-6">
@@ -43,11 +52,10 @@ export function MainContent({ data, currentTime, formatDate }: MainContentProps)
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <MetricCard
                 title="Applications"
-                value={4}
+                value={newCandidates?.length}
                 icon={FileText}
                 trend="up"
                 color="cyan"
-                detail="+12% from last week"
               />
               <MetricCard
                 title="Interviews"
@@ -87,7 +95,7 @@ export function MainContent({ data, currentTime, formatDate }: MainContentProps)
 
                 {/* Jobs Tab Content */}
                 <TabsContent value="jobs" className="mt-0">
-                  <JobList all_jobs={data?.all_jobs || []} />
+                  <JobList all_jobs={data?.all_jobs || []} all_tests={data?.all_tests || []} />
                 </TabsContent>
               </Tabs>
             </div>

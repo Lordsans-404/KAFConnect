@@ -14,7 +14,7 @@ export function DashboardContent({ data, currentTime, formatDate, token }: Dashb
   return (
     <>
       {/* Main Content Area - Recruitment Overview */}
-      <MainContent data={data} currentTime={currentTime} formatDate={formatDate} />
+      <MainContent data={data} currentTime={currentTime} formatDate={formatDate} token={token} />
 
       {/* Right Sidebar - Summary and Quick Actions */}
       <RightSidebar data={data} currentTime={currentTime} formatDate={formatDate} token={token} />

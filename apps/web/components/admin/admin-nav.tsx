@@ -52,25 +52,6 @@ export function AdminNavbar() {
       <div className="flex items-center space-x-6">
         {/* Icons and Profile */}
         <div className="flex items-center space-x-3">
-          {/* Notifications */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative text-slate-600 dark:text-slate-400"
-                >
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-cyan-500 rounded-full animate-pulse" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Notifications</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
           {/* Theme Toggle */}
           <TooltipProvider>
             <Tooltip>

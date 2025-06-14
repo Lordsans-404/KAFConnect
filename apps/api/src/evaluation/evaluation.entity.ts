@@ -1,5 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, OneToOne } from 'typeorm';
-import { Job, JobApplication } from '../jobs/jobs.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { User } from '../users/users.entity';
 
 @Entity()
@@ -13,102 +18,72 @@ export class Test {
   @ManyToOne(() => User)
   createdBy: User;
 
-  @Column({ default: 0 }) // Total possible score for the test
-  totalScore: number;
-
-  @OneToMany(() => EssayQuestion, question => question.test, { cascade: true })
-  questions: EssayQuestion[];
+  @OneToMany(() => Question, question => question.test, { cascade: true })
+  questions: Question[];
 }
 
 @Entity()
-export class EssayQuestion {
+export class Question {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User)
-  createdBy: User;
-
   @Column('text')
-  prompt: string; // The essay question text
-
-  @Column({ nullable: true })
-  wordLimit: number; // Optional word limit
+  text: string;
 
   @ManyToOne(() => Test, test => test.questions)
   test: Test;
+
+  @OneToMany(() => Choice, choice => choice.question, { cascade: true })
+  choices: Choice[];
 }
 
 @Entity()
-export class TestSubmission {
+export class Choice {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  text: string;
+
+  @Column({ default: false })
+  isCorrect: boolean;
+
+  @ManyToOne(() => Question, question => question.choices)
+  question: Question;
+}
+
+@Entity()
+export class Submission {
   @PrimaryGeneratedColumn()
   id: number;
 
   @ManyToOne(() => Test)
   test: Test;
 
-  @ManyToOne(() => User) // User Yang Menjawab Pertanyaan
-  applicant: User;
+  @ManyToOne(() => User)
+  user: User;
 
-  @OneToMany(() => EssayAnswer, answer => answer.submission, { cascade: true })
-  answers: EssayAnswer[];
+  @OneToMany(() => Answer, answer => answer.submission, { cascade: true })
+  answers: Answer[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   submittedAt: Date;
+  
+  @Column({default:0})
+  totalScore:number;
 }
 
 @Entity()
-export class EssayAnswer {
+export class Answer {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('text')
-  answer: string;
+  @ManyToOne(() => Submission, submission => submission.answers)
+  submission: Submission;
 
-  @Column({ nullable: true })
-  score: number;
+  @ManyToOne(() => Question)
+  question: Question;
 
-  @Column('text', { nullable: true })
-  feedback: string;
-
-  @ManyToOne(() => EssayQuestion)
-  question: EssayQuestion;
-
-  @ManyToOne(() => TestSubmission, submission => submission.answers)
-  submission: TestSubmission;
-}
-
-
-// Interview Results
-export enum InterviewResult {
-  PENDING = 'pending',
-  PASSED = 'passed',
-  FAILED = 'failed',
-  HOLD = 'hold'
-}
-
-@Entity()
-export class Interview {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @ManyToOne(() => JobApplication, application => application.interview)
-  application: JobApplication;
-
-  @ManyToOne(() => User)
-  interviewer: User;
-
-  @Column({ type: 'timestamp' })
-  scheduledTime: Date;
-
-  @Column()
-  durationMinutes: number;
-
-  @Column()
-  location: string;
-
-  @Column('text', { nullable: true })
-  notes: string;
-
-  @Column({ type: 'enum', enum: InterviewResult, default: InterviewResult.PENDING })
-  result: InterviewResult;
+  @ManyToOne(() => Choice)
+  selectedChoice: Choice;
 }

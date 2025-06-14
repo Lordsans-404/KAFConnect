@@ -41,6 +41,9 @@ export class CreateJobDto {
   closingDate?: Date;
 
   @IsOptional()
+  testId?:any;
+
+  @IsOptional()
   isActive?: boolean;
 }
 

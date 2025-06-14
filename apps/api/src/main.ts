@@ -1,8 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { join } from 'path';
+import * as express from 'express';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 
 async function bootstrap() {
+  console.log('Hello from main.ts');
   const app = await NestFactory.create(AppModule,{
   logger: ['error', 'warn', 'log'],});
   app.enableCors({
@@ -23,6 +26,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
   await app.listen(process.env.PORT ?? 3000);
 
 }
