@@ -49,6 +49,17 @@ export class EvaluationService {
 	}
 
 	async getAllTests(){
-		return this.testRepository.find({relations:["questions"]}) || undefined;
+		return this.testRepository.find({relations:["questions", "questions.choices"]}) || undefined;
+	}
+
+	async getTestById(id: number): Promise<Test>{ 
+		const test = await this.testRepository.findOne({
+			where: {id},
+			relations:['questions', 'questions.choices']
+		})
+		if(!test){
+			throw new NotFoundException("The test is not found")
+		}
+		return test;
 	}
 }

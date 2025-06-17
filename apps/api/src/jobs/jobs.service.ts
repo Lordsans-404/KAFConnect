@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { Job,JobApplication, ApplicationStatus } from './jobs.entity';
 import { User } from '../users/users.entity';
 import { CreateJobDto, UpdateJobDto } from './dto/job.dto';
-import { CreateJobApplicationDto } from './dto/createApplicationJob.dto';
+import { CreateJobApplicationDto, UpdateJobApplicationDto } from './dto/createApplicationJob.dto';
 
 @Injectable()
 export class JobsService {
@@ -105,5 +105,23 @@ export class JobsService {
     await this.jobApplicationRepository.save(application);
 
     return { message: 'Lamaran berhasil dikirim.' };
+  }
+
+
+  async updateApplication(id: number, dto: UpdateJobApplicationDto): Promise<JobApplication> {
+    const application = await this.jobApplicationRepository.findOne({
+      where: { id },
+      relations: ['job', 'userApplicant'],
+    });
+
+    if (!application) throw new NotFoundException('Application not found');
+
+    // Hanya update field yang dikirim (jaga-jaga null/undefined)
+    if (dto.status !== undefined) application.status = dto.status;
+    if (dto.resumePath !== undefined) application.resumePath = dto.resumePath;
+    if (dto.coverLetter !== undefined) application.coverLetter = dto.coverLetter;
+    if (dto.adminNotes !== undefined) application.adminNotes = dto.adminNotes;
+
+    return this.jobApplicationRepository.save(application);
   }
 }

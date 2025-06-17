@@ -20,3 +20,21 @@ export class CreateJobApplicationDto {
   @IsEnum(ApplicationStatus)
   status?: ApplicationStatus;
 }
+
+export class UpdateJobApplicationDto {
+  @IsOptional()
+  @IsEnum(ApplicationStatus)
+  status?: ApplicationStatus;
+
+  @IsOptional()
+  @IsString()
+  resumePath?: string;
+
+  @IsOptional()
+  @IsString()
+  coverLetter?: string;
+
+  @IsOptional()
+  @IsString()
+  adminNotes?: string;
+}

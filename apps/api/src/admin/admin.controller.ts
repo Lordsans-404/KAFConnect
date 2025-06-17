@@ -1,6 +1,7 @@
 import { Controller, Post, Req, Get, Body, Put, Logger, Param, ParseIntPipe, UseGuards, SetMetadata, ForbiddenException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateJobDto, UpdateJobDto } from '../jobs/dto/job.dto';
+import { UpdateJobApplicationDto, CreateJobApplicationDto } from '../jobs/dto/createApplicationJob.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Job } from '../jobs/jobs.entity';
@@ -39,14 +40,24 @@ export class AdminController {
     return this.jobsService.createJob(createJobDto);
   }
 
-  @Put(':id')
+  @Put('update-job/:id')
   @UseGuards(JwtAuthGuard,RolesGuard)
-  update(
+  updateJob(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateJobDto: UpdateJobDto
   ): Promise<Job> {
     return this.jobsService.updateJob(id, updateJobDto);
   }
+
+  @Put('update-applicant/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  updateApplicant(
+    @Param('id', ParseIntPipe) id:number,
+    @Body() dto: UpdateJobApplicationDto
+    ){
+    return this.jobsService.updateApplication(id,dto)
+  }
+
 
   @Post('new-test')
   async newTest(@Body() dto: CreateTestDto){

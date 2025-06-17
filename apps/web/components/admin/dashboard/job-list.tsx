@@ -46,7 +46,7 @@ interface JobRowProps {
   const handleSave = async (values: JobFormValues) => {
     const token = localStorage.getItem("token") // atau ambil dari state/context
 
-    const response = await fetch(`http://localhost:3000/admin/${job.id}`, {
+    const response = await fetch(`http://localhost:3000/admin/update-job/${job.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

@@ -20,6 +20,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JobsService } from '../jobs/jobs.service';
+import { EvaluationService } from '../evaluation/evaluation.service';
 import { CreateUserDto } from './dto/register.dto';
 import { CreateUserProfileDto, UpdateUserProfileDto } from './dto/create-profile.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -33,6 +34,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly jobsService: JobsService,
+    private readonly evaluationService: EvaluationService,
     ) {}
 
   @Post('register')
@@ -111,6 +113,16 @@ export class UsersController {
     return this.usersService.dashboardService(req.user)
   }
 
+  @Get('dashboard/test/:id')
+  async getSingleTest(
+    @Param("id", ParseIntPipe)id : number,
+    @Req() req
+    ){
+    return this.evaluationService.getTestById(id);
+  }
+
+
+  // Post 
   @Post('apply-job')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', {
@@ -180,6 +192,8 @@ export class UsersController {
       message: 'Profile successfully created!'
     } 
   }
+
+  // Patch
   @Patch('profile/:userId')
   async updateProfile(@Param('userId', ParseIntPipe) userId: number,
     @Body() updateDto: UpdateUserProfileDto){

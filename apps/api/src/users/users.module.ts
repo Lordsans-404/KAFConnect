@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailModule } from '../email/email.module';
 import { JobsModule } from '../jobs/jobs.module';
+import { EvaluationModule } from '../evaluation/evaluation.module';
 import { Job, JobApplication } from '../jobs/jobs.entity';
 
 
@@ -15,6 +16,7 @@ import { Job, JobApplication } from '../jobs/jobs.entity';
     TypeOrmModule.forFeature([User, UserProfile]),
     TypeOrmModule.forFeature([Job, JobApplication]),
     forwardRef(()=>JobsModule),
+    forwardRef(()=>EvaluationModule),
     EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
