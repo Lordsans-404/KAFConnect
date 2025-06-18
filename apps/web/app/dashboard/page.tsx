@@ -407,11 +407,12 @@ function ApplicationItem({
 }) {
   const logo = "/placeholder.svg?height=40&width=40"
   const posted = timeAgo(new Date(appliedJob.applicationDate))
+  const test = appliedJob.job.testId?.id
   const getStatusColor = () => {
     switch (appliedJob.status) {
       case "submitted":
         return "bg-cyan-100 hover:bg-cyan-200 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100";
-      case "blue":
+      case "written_test":
         return "bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-100";
       case "purple":
         return "bg-purple-100 hover:bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-100";
@@ -419,7 +420,7 @@ function ApplicationItem({
         return "bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-100";
       case "green":
         return "bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-100";
-      case "red":
+      case "rejected":
         return "bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-100";
       default:
         return "bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300";
@@ -470,14 +471,15 @@ function ApplicationItem({
         </div>
       </div>
       <div className="flex justify-end mt-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300"
-        >
-          View Details
-          <ChevronRight className="h-3 w-3 ml-1" />
-        </Button>
+          <a
+            href={`dashboard/test/${test}`} // assuming `testId` is available from `appliedJob`
+            className="h-8 text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 inline-flex items-center px-3 rounded-md transition-colors"
+          >
+            Start Test
+            <ChevronRight className="h-3 w-3 ml-1" />
+          </a>
+       
+        
       </div>
     </div>
   )

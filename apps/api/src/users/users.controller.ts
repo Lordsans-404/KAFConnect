@@ -113,7 +113,7 @@ export class UsersController {
     return this.usersService.dashboardService(req.user)
   }
 
-  @Get('dashboard/test/:id')
+  @Get('test/:id')
   async getSingleTest(
     @Param("id", ParseIntPipe)id : number,
     @Req() req

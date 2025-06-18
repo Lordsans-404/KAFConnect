@@ -23,10 +23,9 @@ export function CandidateList({ all_candidates }: { all_candidates: any }) {
       <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <div className="col-span-3">Candidate</div>
         <div className="col-span-3">Job Title</div>
-        <div className="col-span-2">Status</div>
+        <div className="col-span-3">Status</div>
         <div className="col-span-2">Applied</div>
         <div className="col-span-1">Resume</div>
-        <div className="col-span-1">Action</div>
       </div>
 
       {/* Table Rows */}
@@ -195,7 +194,7 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
         </div>
       </div>
       <div className="col-span-3 flex items-center text-slate-600 dark:text-slate-300 truncate">{position}</div>
-      <div className="col-span-2 flex items-center">
+      <div className="col-span-3 flex items-center">
         {canChangeStatus ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -272,11 +271,6 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
             <FileX className="h-4 w-4 text-slate-400" />
           </Button>
         )}
-      </div>
-      <div className="col-span-1 flex items-center justify-center">
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <span>⋯</span>
-        </Button>
       </div>
     </div>
   )

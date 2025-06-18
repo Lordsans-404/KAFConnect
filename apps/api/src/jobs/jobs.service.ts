@@ -61,6 +61,7 @@ export class JobsService {
     return this.jobApplicationRepository
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.job', 'job')
+      .leftJoinAndSelect('job.testId', 'testId')
       .where('application.userApplicant.id = :userId', { userId })
       .andWhere('job.isActive = :isActive', { isActive: true })
       .getMany();

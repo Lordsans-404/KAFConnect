@@ -45,7 +45,7 @@ interface JobRowProps {
   // Di tempat kamu memanggil <JobDetailDialog />
   const handleSave = async (values: JobFormValues) => {
     const token = localStorage.getItem("token") // atau ambil dari state/context
-
+    console.log(values)
     const response = await fetch(`http://localhost:3000/admin/update-job/${job.id}`, {
       method: "PUT",
       headers: {
