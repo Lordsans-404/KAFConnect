@@ -175,7 +175,6 @@ export function JobDetailDialog({
     label: test.title,
   }))
 
-
   const filteredTests = tests.filter(test =>
     test.title.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -304,6 +303,7 @@ export function JobDetailDialog({
             name="testId"
             render={({ field }) => (
               <div>
+                <p>Active Test : {field.value}</p>
                 <ReactSelect
                   styles={customStyles} 
                   value={testOptions.find(option => option.value === field.value) || null}

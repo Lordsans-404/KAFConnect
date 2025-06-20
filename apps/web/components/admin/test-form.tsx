@@ -13,7 +13,7 @@ import {
 export function TestCreatorForm({ userId, onSubmit, token, open, onOpenChange }){
   const [formData, setFormData] = useState({
     title: '',
-    createdBy: userId || '',
+    createdBy: typeof userId === 'number' ? userId : Number(userId || 0),
     questions: [
       {
         text: '',

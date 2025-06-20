@@ -23,6 +23,7 @@ import { JobsService } from '../jobs/jobs.service';
 import { EvaluationService } from '../evaluation/evaluation.service';
 import { CreateUserDto } from './dto/register.dto';
 import { CreateUserProfileDto, UpdateUserProfileDto } from './dto/create-profile.dto';
+import { SubmitTestDto, AnswerDto } from '../evaluation/dto/submit-test.dto' 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer';
@@ -36,43 +37,6 @@ export class UsersController {
     private readonly jobsService: JobsService,
     private readonly evaluationService: EvaluationService,
     ) {}
-
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  async register(@Body() createUserDto: CreateUserDto) {
-    // Register user with verification token
-    const register = await this.usersService.register({
-      ...createUserDto,
-    });
-    return register
-  }
-
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async login(@Body() body: { email: string; password: string }) {
-    const { access_token, user } = await this.usersService.login(body.email, body.password);
-    var next_url;
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (user.level === "basic"){
-      next_url = "/profile";
-    }
-    else{
-      next_url = "/admin/dashboard";
-    }
-
-    // Include verification status in response
-    return {
-      access_token,
-      user: {
-        ...user,
-        isVerified: user.isVerified
-      },
-      url: next_url
-    };
-  }
 
   @Get('verify-email')
   @Redirect('http://localhost:3001/profile', 301)
@@ -114,15 +78,55 @@ export class UsersController {
   }
 
   @Get('test/:id')
+  @UseGuards(JwtAuthGuard)
   async getSingleTest(
     @Param("id", ParseIntPipe)id : number,
     @Req() req
     ){
-    return this.evaluationService.getTestById(id);
+    const test = await this.evaluationService.getTestById(id)
+    const submission = await this.evaluationService.isSubmitted(req.user.id,id)
+    return {test, user:req.user,submission};
   }
 
 
   // Post 
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body() createUserDto: CreateUserDto) {
+    // Register user with verification token
+    const register = await this.usersService.register({
+      ...createUserDto,
+    });
+    return register
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() body: { email: string; password: string }) {
+    const { access_token, user } = await this.usersService.login(body.email, body.password);
+    var next_url;
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.level === "basic"){
+      next_url = "/profile";
+    }
+    else{
+      next_url = "/admin/dashboard";
+    }
+
+    // Include verification status in response
+    return {
+      access_token,
+      user: {
+        ...user,
+        isVerified: user.isVerified
+      },
+      url: next_url
+    };
+  }
+
   @Post('apply-job')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', {
@@ -148,12 +152,13 @@ export class UsersController {
       jobId: parseInt(body.jobId, 10), // karena dari FormData, semua string
       coverLetter: body.coverLetter,
       applicantId: userId,
-      resumePath: file.path, // asumsi kamu simpan path file
+      resumePath: file?.path || undefined, // asumsi kamu simpan path file
     };
     return this.jobsService.userApplyJob(dto)
   }
 
   @Post('resend-verification')
+  @UseGuards(JwtAuthGuard)
   async resendVerification(@Body() body: { email: string }) {
     const user = await this.usersService.userFindOne({ where: { email: body.email } });
     Logger.log(body.email)
@@ -182,6 +187,7 @@ export class UsersController {
   }
   
   @Post('profile/:userId')
+  @UseGuards(JwtAuthGuard)
   async create(
     @Param('userId', ParseIntPipe) userId: number,
     @Body() createDto: CreateUserProfileDto,
@@ -193,8 +199,18 @@ export class UsersController {
     } 
   }
 
+  @Post("test/:id")
+  @UseGuards(JwtAuthGuard)
+  async submitTest(
+    @Param("id",ParseIntPipe) id:number,
+    @Body() dto:SubmitTestDto){
+    return this.evaluationService.submitTest(dto)
+  }
+
+
   // Patch
   @Patch('profile/:userId')
+  @UseGuards(JwtAuthGuard)
   async updateProfile(@Param('userId', ParseIntPipe) userId: number,
     @Body() updateDto: UpdateUserProfileDto){
     const updated = await this.usersService.updateProfile(userId, updateDto);

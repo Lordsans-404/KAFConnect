@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Test, Submission, Question, Choice, Answer } from './evaluation.entity';
 import { CreateTestDto, CreateChoiceDto, CreateQuestionDto } from './dto/create-test.dto' 
+import { SubmitTestDto, AnswerDto } from './dto/submit-test.dto' 
 import { User } from '../users/users.entity'
 
 
@@ -57,9 +58,67 @@ export class EvaluationService {
 			where: {id},
 			relations:['questions', 'questions.choices']
 		})
+
 		if(!test){
 			throw new NotFoundException("The test is not found")
 		}
 		return test;
 	}
+
+	async isSubmitted(userId: number, testId: number){
+	  const submission = await this.submissionRepository.findOne({
+	    where: { user: { id: userId }, test: {id: testId} },
+	    relations: ['user','test'], // opsional, kalau kamu butuh detail user-nya
+	  })
+
+	  // if (!submission) throw new NotFoundException('Submission not found');
+	  return submission || undefined;
+	}
+
+
+  async submitTest(dto: SubmitTestDto): Promise<Submission> {
+    const test = await this.testRepository.findOne({ where: { id: dto.test } });
+    if (!test) throw new NotFoundException('Test not found');
+
+    const user = await this.usersRepository.findOne({ where: { id: dto.user } });
+    if (!user) throw new NotFoundException('User not found');
+
+    // Create submission
+    const submission = this.submissionRepository.create({
+      test,
+      user,
+      submittedAt: new Date(),
+      totalScore: 0, // sementara
+    });
+    await this.submissionRepository.save(submission);
+
+    let score = 0;
+    const answers: Answer[] = [];
+
+    for (const AnswerDto of dto.answers) {
+      const question = await this.questionRepository.findOne({ where: { id: AnswerDto.question } });
+      if (!question) continue;
+
+      const selectedChoice = await this.choiceRepository.findOne({ where: { id: AnswerDto.selectedChoice } });
+      if (!selectedChoice) continue;
+
+      if (selectedChoice.isCorrect) score++;
+
+      const answer = this.answerRepository.create({
+        submission,
+        question,
+        selectedChoice,
+      });
+      answers.push(answer);
+    }
+
+    await this.answerRepository.save(answers);
+
+    submission.totalScore = score;
+    await this.submissionRepository.save(submission);
+
+    return submission;
+  }
+
+
 }

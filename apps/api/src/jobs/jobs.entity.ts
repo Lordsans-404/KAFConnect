@@ -92,6 +92,12 @@ export class JobApplication {
   @Column('text', { nullable: true })
   coverLetter: string;
 
+  @Column({nullable:true})
+  testExpiredAt: Date;
+
+  @Column({default:false})
+  isTestExpired: boolean;
+
   @Column('text', { nullable: true })
   adminNotes: string;
 

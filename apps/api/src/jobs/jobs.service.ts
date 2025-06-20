@@ -35,11 +35,30 @@ export class JobsService {
     return this.jobRepository.save(job);
   }
 
-  async getAllJobs() {
-    return this.jobRepository.find({
-      relations: ['applications'],
-    }) || undefined;
+  async getAllJobs(page?: number, limit?: number) {
+    if(page && limit){
+      const take = limit || 10; // Ambil 10 data default
+      const skip = page ? (page - 1) * take : 0;
+
+      const [jobs, total] = await this.jobRepository.findAndCount({
+        relations: ['applications'],
+        skip,
+        take,
+      });
+
+      return {
+        data: jobs,
+        total,
+        page: page || 1,
+        limit: take,
+        totalPages: Math.ceil(total / take),
+      };
+    }
+    else{
+      return this.jobRepository.find({relations: ['applications'],take:5})
+    }
   }
+
 
   // Get all jobs except the one that user have Not applied
   async getUnappliedJobs(userId: any): Promise<Job[]> {
@@ -114,11 +133,16 @@ export class JobsService {
       where: { id },
       relations: ['job', 'userApplicant'],
     });
-
+    const now = new Date()
+    now.setDate(now.getDate() + 2);
     if (!application) throw new NotFoundException('Application not found');
 
     // Hanya update field yang dikirim (jaga-jaga null/undefined)
-    if (dto.status !== undefined) application.status = dto.status;
+    if (dto.status !== undefined){
+      application.status = dto.status
+      if(dto.status === "written_test")
+        application.testExpiredAt = now
+    }
     if (dto.resumePath !== undefined) application.resumePath = dto.resumePath;
     if (dto.coverLetter !== undefined) application.coverLetter = dto.coverLetter;
     if (dto.adminNotes !== undefined) application.adminNotes = dto.adminNotes;

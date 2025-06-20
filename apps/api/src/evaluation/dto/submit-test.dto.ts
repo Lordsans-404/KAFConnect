@@ -4,18 +4,18 @@ import { Type } from 'class-transformer';
 
 export class AnswerDto {
   @IsInt()
-  questionId: number;
+  question: number;
 
   @IsInt()
-  choiceId: number;
+  selectedChoice: number;
 }
 
 export class SubmitTestDto {
   @IsInt()
-  testId: number;
+  test: number;
 
   @IsInt()
-  userId: number;
+  user: number;
 
   @IsArray()
   @ValidateNested({ each: true })
