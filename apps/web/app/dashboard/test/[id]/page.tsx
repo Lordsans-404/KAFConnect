@@ -19,6 +19,7 @@ interface AnswerDto {
 interface SubmitTestDto {
   testId: number
   userId: number
+  jobApplicationId?: string | number
   answers: AnswerDto[]
 }
 
@@ -96,10 +97,20 @@ export default function UserTestForm() {
   const hasSubmittedRef = useRef(false)
   const isSubmittingRef = useRef(false)
 
-  const router = useParams()
+  // App Router hooks
+  const params = useParams()
   const searchParams = useSearchParams()
-  const testId = Number(router.id)
+  const testId = Number(params.id)
   const viewResults = searchParams.get("results") === "true"
+  const jobApplicationId = searchParams.get("jobApplication")
+
+  // Add this after the parameter extraction for debugging
+  useEffect(() => {
+    console.log("URL Parameters Debug:")
+    console.log("testId:", testId)
+    console.log("jobApplicationId:", jobApplicationId)
+    console.log("viewResults:", viewResults)
+  }, [testId, jobApplicationId, viewResults])
 
   // Memoized calculations
   const progress = useMemo(() => {
@@ -148,6 +159,7 @@ export default function UserTestForm() {
       const submitData: SubmitTestDto = {
         test: test.id,
         user: currentUser.id,
+        jobApplicationId: Number.parseInt(jobApplicationId),
         answers: Object.entries(answers).map(([questionId, choiceId]) => ({
           question: Number.parseInt(questionId),
           selectedChoice: choiceId,
@@ -184,7 +196,7 @@ export default function UserTestForm() {
         setIsSubmitting(false)
       }
     },
-    [test, currentUser, answers, testId, clearTimer],
+    [test, currentUser, answers, testId, jobApplicationId, clearTimer],
   )
 
   // Fetch test data with better error handling

@@ -48,7 +48,7 @@ export class Choice {
   @Column({ default: false })
   isCorrect: boolean;
 
-  @ManyToOne(() => Question, question => question.choices)
+  @ManyToOne(() => Question, question => question.choices,{onDelete:'CASCADE'})
   question: Question;
 }
 
@@ -57,10 +57,10 @@ export class Submission {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Test)
+  @ManyToOne(() => Test,{onDelete:'CASCADE'})
   test: Test;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User,{onDelete:'CASCADE'})
   user: User;
 
   @OneToMany(() => Answer, answer => answer.submission, { cascade: true })
@@ -78,7 +78,7 @@ export class Answer {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Submission, submission => submission.answers)
+  @ManyToOne(() => Submission, submission => submission.answers,{onDelete:'CASCADE'})
   submission: Submission;
 
   @ManyToOne(() => Question)

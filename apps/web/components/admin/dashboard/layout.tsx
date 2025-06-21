@@ -16,7 +16,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <AdminNavbar />
 
         <div className="grid grid-cols-12 gap-6">
-          <DashboardSidebar />
+          <DashboardSidebar currentPage="dashboard" />
           {children}
         </div>
       </div>

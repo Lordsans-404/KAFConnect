@@ -1,5 +1,5 @@
 // submit-test.dto.ts
-import { IsInt, IsArray, ValidateNested } from 'class-validator';
+import { IsInt, IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AnswerDto {
@@ -16,6 +16,9 @@ export class SubmitTestDto {
 
   @IsInt()
   user: number;
+
+  @IsInt()
+  jobApplicationId:number
 
   @IsArray()
   @ValidateNested({ each: true })

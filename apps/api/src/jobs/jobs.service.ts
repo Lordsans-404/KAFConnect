@@ -1,7 +1,7 @@
 import { Injectable,
   ConflictException, 
   UnauthorizedException,
-  NotFoundException 
+  NotFoundException
  } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -35,28 +35,31 @@ export class JobsService {
     return this.jobRepository.save(job);
   }
 
-  async getAllJobs(page?: number, limit?: number) {
-    if(page && limit){
-      const take = limit || 10; // Ambil 10 data default
-      const skip = page ? (page - 1) * take : 0;
+  async getAllJobs() {
+    // Old version: no pagination
+    return this.jobRepository.find({
+      relations: ['applications'],
+      take: 5, // default limit
+    });
+  }
 
-      const [jobs, total] = await this.jobRepository.findAndCount({
-        relations: ['applications'],
-        skip,
-        take,
-      });
+  async getPaginatedJobs(page = 1, limit = 10) {
+    const take = limit;
+    const skip = (page - 1) * take;
 
-      return {
-        data: jobs,
-        total,
-        page: page || 1,
-        limit: take,
-        totalPages: Math.ceil(total / take),
-      };
-    }
-    else{
-      return this.jobRepository.find({relations: ['applications'],take:5})
-    }
+    const [jobs, total] = await this.jobRepository.findAndCount({
+      relations: ['applications'],
+      skip,
+      take,
+    });
+
+    return {
+      data: jobs,
+      total,
+      page,
+      limit: take,
+      totalPages: Math.ceil(total / take),
+    };
   }
 
 

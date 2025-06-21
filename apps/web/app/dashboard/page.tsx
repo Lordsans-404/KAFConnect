@@ -486,7 +486,7 @@ function ApplicationItem({ appliedJob }: { appliedJob: any }) {
             size="sm"
             className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
           >
-            <a href={`dashboard/test/${test}`}>
+            <a href={`dashboard/test/${test}?jobApplication=${appliedJob.id}`}>
               Start Test
               <ChevronRight className="h-3 w-3 ml-1" />
             </a>

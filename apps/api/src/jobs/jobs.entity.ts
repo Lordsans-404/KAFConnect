@@ -101,6 +101,7 @@ export class JobApplication {
   @Column('text', { nullable: true })
   adminNotes: string;
 
-  @OneToOne(() => Submission, submission => submission.totalScore)
-  submissionResult: Submission;
+  @OneToOne(() => Submission, {cascade:true})
+  @JoinColumn()
+  submission: Submission;
 }

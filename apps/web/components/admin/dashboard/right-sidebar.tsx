@@ -18,7 +18,8 @@ interface RightSidebarProps {
 
 export function RightSidebar({ data, currentTime, formatDate, token }: RightSidebarProps) {
   const { all_users, users_by_profile, profile, all_candidates, all_jobs } = data || {}
-  const [openDialogTest, setOpendDialogTest] = useState(false)
+  const [openDialogTest, setOpenDialogTest] = useState(false)
+  const [openDialogNewJob, setOpenDialogNewJob] = useState(false)
   // console.log(profile?.user.id)
 
   const aWeekAgo = new Date();
@@ -61,13 +62,15 @@ export function RightSidebar({ data, currentTime, formatDate, token }: RightSide
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
               <CreateStaff />
-              <CreateJob token={token} />
-              <ActionButton icon={FileText} label="New Test" onClick={() => setOpendDialogTest(true)} />
+              <ActionButton icon={FileText} label="New Job" onClick={() => setOpenDialogNewJob(true)} />
+              <ActionButton icon={FileText} label="New Test" onClick={() => setOpenDialogTest(true)} />
               <ActionButton icon={FileText} label="Reports" />
             </div>
           </CardContent>
         </Card>
-        <TestCreatorForm userId={profile?.user.id} token={token} open={openDialogTest} onOpenChange={setOpendDialogTest} />
+        <TestCreatorForm userId={profile?.user.id} token={token} open={openDialogTest} onOpenChange={setOpenDialogTest} />
+        <CreateJob token={token} open={openDialogNewJob} onOpenChange={setOpenDialogNewJob} />
+
       </div>
     </div>
   )
