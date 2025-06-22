@@ -8,6 +8,8 @@ import { ChevronLeft, ChevronRight, Loader2, PlusCircle } from "lucide-react"
 import { JobDetailDialog } from "@/components/admin/job-detail"
 import { CreateJob } from "@/components/create-job"
 import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
+import { JobAnalytics } from "@/components/admin/job-analytics"
+
 
 interface Job {
   id: string
@@ -52,6 +54,10 @@ export default function JobsPage() {
   const [dialogOpenNew, setDialogOpenNew] = useState(false)
   const [allTests, setAllTests] = useState([])
   const [token, setToken] = useState<string>("")
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
+    departmentStats: [],
+    employmentStats: [],
+  })
 
   const fetchJobs = async (page = 1, limit = 5) => {
     try {
@@ -85,6 +91,11 @@ export default function JobsPage() {
         total: data.total,
         totalPages: data.totalPages,
       })
+      setAnalyticsData({
+        departmentStats: data.departmentStats || [],
+        employmentStats: data.employmentStats || [],
+      })
+
     } catch (error) {
       console.error("Error fetching jobs:", error)
     } finally {
@@ -194,7 +205,7 @@ export default function JobsPage() {
                   Create New Job
                 </Button>
               </div>
-
+              <JobAnalytics analyticsData={analyticsData}/>
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-slate-500" />

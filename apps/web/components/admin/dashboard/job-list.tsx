@@ -29,7 +29,7 @@ export function JobList({ all_jobs = [],all_tests=[], token }: JobListProps) {
         )}
 
       </div>
-      {all_jobs.length > 4 &&(<Link href="#">See All Jobs</Link>)}
+      {all_jobs.length > 4 &&(<Link href="dashboard/jobs">See All Jobs</Link>)}
     </div>
   )
 }

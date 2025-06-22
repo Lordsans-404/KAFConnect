@@ -43,6 +43,28 @@ export class JobsService {
     });
   }
 
+  async getDepartmentStats() {
+    return this.jobRepository
+      .createQueryBuilder('job')
+      .leftJoin('job.applications', 'application')
+      .select('job.department', 'department')
+      .addSelect('COUNT(DISTINCT job.id)', 'jobs')
+      .addSelect('COUNT(application.id)', 'applications')
+      .groupBy('job.department')
+      .getRawMany();
+  }
+
+  async getEmploymentTypeStats() {
+    return this.jobRepository
+      .createQueryBuilder('job')
+      .leftJoin('job.applications', 'application')
+      .select('job.employmentType', 'type')
+      .addSelect('COUNT(DISTINCT job.id)', 'jobs')
+      .addSelect('COUNT(application.id)', 'applications')
+      .groupBy('job.employmentType')
+      .getRawMany();
+  }
+
   async getPaginatedJobs(page = 1, limit = 10) {
     const take = limit;
     const skip = (page - 1) * take;
@@ -52,9 +74,33 @@ export class JobsService {
       skip,
       take,
     });
+    // Chart data via efficient DB query
+    const departmentStats = await this.getDepartmentStats();
+    const employmentStats = await this.getEmploymentTypeStats();
 
     return {
       data: jobs,
+      total,
+      page,
+      limit: take,
+      totalPages: Math.ceil(total / take),
+      departmentStats,
+      employmentStats
+    };
+  }
+
+  async getPaginatedJobApplications(page = 1, limit = 10) {
+    const take = limit;
+    const skip = (page - 1) * take;
+
+    const [jobAppliants, total] = await this.jobApplicationRepository.findAndCount({
+      relations: ["job", "userApplicant", "submission"],
+      skip,
+      take,
+    });
+
+    return {
+      data: jobAppliants,
       total,
       page,
       limit: take,

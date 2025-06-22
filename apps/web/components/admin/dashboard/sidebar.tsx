@@ -30,8 +30,8 @@ const navigationItems: NavItemData[] = [
 
 export function DashboardSidebar({ currentPage }: DashboardSidebarProps) {
   return (
-    <div className="col-span-12 md:col-span-3 lg:col-span-2">
-      <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-full">
+    <div className="col-span-12 md:col-span-3 lg:col-span-2 md:sticky md:top-4 h-fit">
+      <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
         <CardContent className="p-4">
           {/* Main Navigation Menu */}
           <nav className="space-y-2">
@@ -59,6 +59,7 @@ export function DashboardSidebar({ currentPage }: DashboardSidebarProps) {
       </Card>
     </div>
   )
+
 }
 
 interface NavItemProps {

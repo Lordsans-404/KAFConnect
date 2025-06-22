@@ -46,6 +46,19 @@ export class AdminController {
     return this.jobsService.getPaginatedJobs(pageNumber, limitNumber);
   }
 
+  @Get('candidates') 
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @SetMetadata('roles', ['super_admin', 'admin', 'staff'])
+  async getPaginatedJobApplications(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNumber = parseInt(page || '1', 10);
+    const limitNumber = parseInt(limit || '10', 10);
+
+    return this.jobsService.getPaginatedJobApplications(pageNumber, limitNumber);
+  }
+
   // Post
   @Post('new-job')
   @UseGuards(JwtAuthGuard,RolesGuard)  
