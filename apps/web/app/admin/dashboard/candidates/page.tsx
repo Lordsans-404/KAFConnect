@@ -153,7 +153,7 @@ export default function CandidatesPage() {
                 </div>
               ) : (
                 <>
-                  <Card>
+                  <Card className="border-0">
                     <CardHeader>
                       <CardTitle className="text-lg">Candidate Applications</CardTitle>
                     </CardHeader>
@@ -163,8 +163,9 @@ export default function CandidatesPage() {
                         <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                           <div className="col-span-3">Candidate</div>
                           <div className="col-span-3">Job Title</div>
-                          <div className="col-span-3">Status</div>
+                          <div className="col-span-2">Status</div>
                           <div className="col-span-2">Applied</div>
+                          <div className="col-span-1">Score</div>
                           <div className="col-span-1">Resume</div>
                         </div>
 
@@ -181,6 +182,8 @@ export default function CandidatesPage() {
                               date={timeAgo(new Date(candidate.applicationDate))}
                               resumePath={candidate.resumePath}
                               onStatusUpdated={handleStatusUpdated}
+                              totalQuestions={candidate.job.testId?.questions}
+                              score={candidate.submission?.totalScore}
                             />
                           ))}
                           {candidates.length === 0 && (
@@ -272,13 +275,17 @@ interface CandidateRowProps {
   date: string
   resumePath?: string | null
   onStatusUpdated?: (candidateId: number, newStatus: ApplicationStatus) => void
+  score:any
+  totalQuestions:any
 }
 
-function CandidateRow({ id, name, email, position, status, date, resumePath, onStatusUpdated }: CandidateRowProps) {
+function CandidateRow({ id, name, email, position, status, date, resumePath, onStatusUpdated, totalQuestions, score }: CandidateRowProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [currentStatus, setCurrentStatus] = useState(status)
-
+  const scorePercentage = !isNaN(score) && !isNaN(totalQuestions.length) && totalQuestions.length > 0
+  ? `${Math.round((score / totalQuestions.length) * 100)}`
+  : '-'
   const hasResume = Boolean(resumePath)
   const resumeUrl = "http://localhost:3000/" + resumePath
 
@@ -399,7 +406,7 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
         </div>
       </div>
       <div className="col-span-3 flex items-center text-slate-600 dark:text-slate-300 truncate">{position}</div>
-      <div className="col-span-3 flex items-center">
+      <div className="col-span-2 flex items-center">
         {canChangeStatus ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -433,6 +440,7 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
         )}
       </div>
       <div className="col-span-2 flex items-center text-slate-500 dark:text-slate-400">{date}</div>
+      <div className="col-span-1 flex items-center text-right text-slate-500 dark:text-slate-400">{scorePercentage !== null ? `${scorePercentage}` : '-'}</div>
       <div className="col-span-1 flex items-center justify-center">
         {hasResume ? (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

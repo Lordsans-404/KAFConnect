@@ -94,7 +94,7 @@ export class JobsService {
     const skip = (page - 1) * take;
 
     const [jobAppliants, total] = await this.jobApplicationRepository.findAndCount({
-      relations: ["job", "userApplicant", "submission"],
+      relations: ["job", "userApplicant", "submission", "job.testId","job.testId.questions"],
       skip,
       take,
     });
