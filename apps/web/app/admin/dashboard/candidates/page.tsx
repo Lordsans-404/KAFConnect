@@ -4,8 +4,8 @@ import { useState, useEffect, useTransition } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight, Loader2, FileIcon as FileUser, FileX, ChevronDown, Check } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ChevronLeft, ChevronRight, Loader2, FileIcon as FileUser, FileX, ChevronDown, Check, Filter, X } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -47,8 +47,14 @@ export enum ApplicationStatus {
   REJECTED = "rejected",
 }
 
+interface Filters {
+  status: ApplicationStatus[]
+  dateRange: 'all' | 'today' | 'week' | 'month' | '3months'
+}
+
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [allCandidates, setAllCandidates] = useState<Candidate[]>([]) // Store all candidates for filtering
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -57,6 +63,10 @@ export default function CandidatesPage() {
   })
   const [loading, setLoading] = useState(true)
   const [token, setToken] = useState<string>("")
+  const [filters, setFilters] = useState<Filters>({
+    status: [],
+    dateRange: 'all'
+  })
 
   const fetchCandidates = async (page = 1, limit = 10) => {
     try {
@@ -83,6 +93,7 @@ export default function CandidatesPage() {
       }
 
       const data: CandidatesResponse = await response.json()
+      setAllCandidates(data.data) // Store all candidates
       setCandidates(data.data)
       setPagination({
         page: data.page,
@@ -97,13 +108,62 @@ export default function CandidatesPage() {
     }
   }
 
+  // Filter candidates based on current filters
+  const applyFilters = () => {
+    let filtered = [...allCandidates]
+
+    // Filter by status
+    if (filters.status.length > 0) {
+      filtered = filtered.filter(candidate => filters.status.includes(candidate.status))
+    }
+
+    // Filter by date range
+    if (filters.dateRange !== 'all') {
+      const now = new Date()
+      const filterDate = new Date()
+
+      switch (filters.dateRange) {
+        case 'today':
+          filterDate.setHours(0, 0, 0, 0)
+          break
+        case 'week':
+          filterDate.setDate(now.getDate() - 7)
+          break
+        case 'month':
+          filterDate.setMonth(now.getMonth() - 1)
+          break
+        case '3months':
+          filterDate.setMonth(now.getMonth() - 3)
+          break
+      }
+
+      filtered = filtered.filter(candidate => {
+        const candidateDate = new Date(candidate.applicationDate)
+        return candidateDate >= filterDate
+      })
+    }
+
+    setCandidates(filtered)
+    // Update pagination for filtered results
+    setPagination(prev => ({
+      ...prev,
+      total: filtered.length,
+      totalPages: Math.ceil(filtered.length / prev.limit),
+      page: 1
+    }))
+  }
+
   useEffect(() => {
     fetchCandidates()
   }, [])
 
+  useEffect(() => {
+    applyFilters()
+  }, [filters, allCandidates])
+
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
-      fetchCandidates(newPage, pagination.limit)
+      setPagination(prev => ({ ...prev, page: newPage }))
     }
   }
 
@@ -111,6 +171,49 @@ export default function CandidatesPage() {
     setCandidates((prev) =>
       prev.map((candidate) => (candidate.id === candidateId ? { ...candidate, status: newStatus } : candidate)),
     )
+    setAllCandidates((prev) =>
+      prev.map((candidate) => (candidate.id === candidateId ? { ...candidate, status: newStatus } : candidate)),
+    )
+  }
+
+  const handleStatusFilter = (status: ApplicationStatus) => {
+    setFilters(prev => ({
+      ...prev,
+      status: prev.status.includes(status)
+        ? prev.status.filter(s => s !== status)
+        : [...prev.status, status]
+    }))
+  }
+
+  const handleDateFilter = (dateRange: Filters['dateRange']) => {
+    setFilters(prev => ({ ...prev, dateRange }))
+  }
+
+  const clearFilters = () => {
+    setFilters({ status: [], dateRange: 'all' })
+  }
+
+  const getStatusDisplayName = (status: ApplicationStatus): string => {
+    const displayNames = {
+      [ApplicationStatus.SUBMITTED]: "Submitted",
+      [ApplicationStatus.UNDER_REVIEW]: "Under Review",
+      [ApplicationStatus.WRITTEN_TEST]: "Written Test",
+      [ApplicationStatus.INTERVIEW]: "Interview",
+      [ApplicationStatus.ACCEPTED]: "Accepted",
+      [ApplicationStatus.REJECTED]: "Rejected",
+    }
+    return displayNames[status]
+  }
+
+  const getDateRangeDisplayName = (range: Filters['dateRange']): string => {
+    const displayNames = {
+      'all': 'All Time',
+      'today': 'Today',
+      'week': 'Last Week',
+      'month': 'Last Month',
+      '3months': 'Last 3 Months'
+    }
+    return displayNames[range]
   }
 
   const timeAgo = (date: Date): string => {
@@ -130,6 +233,15 @@ export default function CandidatesPage() {
     }
     return "Just now"
   }
+
+  // Get paginated candidates
+  const paginatedCandidates = candidates.slice(
+    (pagination.page - 1) * pagination.limit,
+    pagination.page * pagination.limit
+  )
+
+  const hasActiveFilters = filters.status.length > 0 || filters.dateRange !== 'all'
+
   const currentPage = 'candidates'
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -142,9 +254,49 @@ export default function CandidatesPage() {
               <div>
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">All Candidates</h1>
                 <p className="text-slate-600 dark:text-slate-400 mt-1">
-                  Manage and view all candidate applications ({pagination.total} total)
+                  Manage and view all candidate applications ({candidates.length} of {allCandidates.length} total)
                 </p>
               </div>
+
+              {/* Active Filters Display */}
+              {hasActiveFilters && (
+                <div className="flex flex-wrap items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Active filters:</span>
+                  
+                  {filters.status.map(status => (
+                    <Badge key={status} variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                      Status: {getStatusDisplayName(status)}
+                      <button
+                        onClick={() => handleStatusFilter(status)}
+                        className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                  
+                  {filters.dateRange !== 'all' && (
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                      Date: {getDateRangeDisplayName(filters.dateRange)}
+                      <button
+                        onClick={() => handleDateFilter('all')}
+                        className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="h-6 px-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                  >
+                    Clear all
+                  </Button>
+                </div>
+              )}
 
               {loading ? (
                 <div className="flex justify-center items-center py-12">
@@ -159,19 +311,66 @@ export default function CandidatesPage() {
                     </CardHeader>
                     <CardContent className="p-0">
                       <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        {/* Table Header */}
+                        {/* Table Header with Filters */}
                         <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                           <div className="col-span-3">Candidate</div>
                           <div className="col-span-3">Job Title</div>
-                          <div className="col-span-2">Status</div>
-                          <div className="col-span-2">Applied</div>
+                          <div className="col-span-2 flex items-center gap-2">
+                            Status
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700">
+                                  <Filter className={`h-3 w-3 ${filters.status.length > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-48">
+                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">Filter by Status:</div>
+                                <DropdownMenuSeparator />
+                                {Object.values(ApplicationStatus).map((status) => (
+                                  <DropdownMenuCheckboxItem
+                                    key={status}
+                                    checked={filters.status.includes(status)}
+                                    onCheckedChange={() => handleStatusFilter(status)}
+                                  >
+                                    {getStatusDisplayName(status)}
+                                  </DropdownMenuCheckboxItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                          <div className="col-span-2 flex items-center gap-2">
+                            Applied
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700">
+                                  <Filter className={`h-3 w-3 ${filters.dateRange !== 'all' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-40">
+                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">Filter by Date:</div>
+                                <DropdownMenuSeparator />
+                                {(['all', 'today', 'week', 'month', '3months'] as const).map((range) => (
+                                  <DropdownMenuItem
+                                    key={range}
+                                    onClick={() => handleDateFilter(range)}
+                                    className={filters.dateRange === range ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      {filters.dateRange === range && <Check className="h-3 w-3 text-blue-600" />}
+                                      <span>{getDateRangeDisplayName(range)}</span>
+                                    </div>
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                           <div className="col-span-1">Score</div>
                           <div className="col-span-1">Resume</div>
                         </div>
 
                         {/* Table Rows */}
                         <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                          {candidates.map((candidate) => (
+                          {paginatedCandidates.map((candidate) => (
                             <CandidateRow
                               key={candidate.id}
                               id={candidate.id}
@@ -186,9 +385,14 @@ export default function CandidatesPage() {
                               score={candidate.submission?.totalScore}
                             />
                           ))}
-                          {candidates.length === 0 && (
+                          {paginatedCandidates.length === 0 && (
                             <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-                              <p>No candidates found</p>
+                              <p>{hasActiveFilters ? 'No candidates match the current filters' : 'No candidates found'}</p>
+                              {hasActiveFilters && (
+                                <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
+                                  Clear filters
+                                </Button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -201,7 +405,8 @@ export default function CandidatesPage() {
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-slate-600 dark:text-slate-400">
                         Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-                        {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
+                        {Math.min(pagination.page * pagination.limit, candidates.length)} of {candidates.length} results
+                        {hasActiveFilters && ` (filtered from ${allCandidates.length} total)`}
                       </div>
 
                       <div className="flex items-center space-x-2">

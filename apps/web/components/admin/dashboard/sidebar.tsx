@@ -22,10 +22,7 @@ const navigationItems: NavItemData[] = [
   { icon: Command, label: "Dashboard", href: "/admin/dashboard", key: "dashboard" },
   { icon: Users, label: "Candidates", href: "/admin/dashboard/candidates", key: "candidates" },
   { icon: Briefcase, label: "Jobs", href: "/admin/dashboard/jobs", key: "jobs" },
-  { icon: Calendar, label: "Interviews", href: "/admin/dashboard/interviews", key: "interviews" },
   { icon: Users, label: "Users", href: "/admin/dashboard/users", key: "users" },
-  { icon: MessageSquare, label: "Messages", href: "/admin/dashboard/messages", key: "messages" },
-  { icon: Settings, label: "Settings", href: "/admin/dashboard/settings", key: "settings" },
 ]
 
 export function DashboardSidebar({ currentPage }: DashboardSidebarProps) {
