@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export function LoginForm({ switchToRegister }: { switchToRegister: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
 
@@ -19,7 +20,7 @@ export function LoginForm({ switchToRegister }: { switchToRegister: () => void }
     const email = document.getElementById('email').value
     const password = document.getElementById('password').value
 
-    const res = await fetch('http://localhost:3000/users/login', {
+    const res = await fetch(`${API_BASE_URL}/users/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),

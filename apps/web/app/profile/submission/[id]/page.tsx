@@ -41,55 +41,6 @@ interface Test {
 }
 
 // Mock test data
-const mockTest: Test = {
-  id: 1,
-  title: "JavaScript Fundamentals Assessment",
-  description: "Test your knowledge of JavaScript basics and ES6+ features",
-  timeLimit: 30,
-  questions: [
-    {
-      id: 1,
-      text: "What is the correct way to declare a variable in JavaScript ES6+?",
-      choices: [
-        { id: 1, text: "var myVariable = 'value'" },
-        { id: 2, text: "let myVariable = 'value'" },
-        { id: 3, text: "const myVariable = 'value'" },
-        { id: 4, text: "Both let and const are correct" },
-      ],
-    },
-    {
-      id: 2,
-      text: "Which method is used to add an element to the end of an array?",
-      choices: [
-        { id: 5, text: "array.push()" },
-        { id: 6, text: "array.pop()" },
-        { id: 7, text: "array.shift()" },
-        { id: 8, text: "array.unshift()" },
-      ],
-    },
-    {
-      id: 3,
-      text: "What does the '===' operator do in JavaScript?",
-      choices: [
-        { id: 9, text: "Checks for equality with type coercion" },
-        { id: 10, text: "Checks for strict equality without type coercion" },
-        { id: 11, text: "Assigns a value to a variable" },
-        { id: 12, text: "Compares object references only" },
-      ],
-    },
-    {
-      id: 4,
-      text: "Which of the following is NOT a JavaScript data type?",
-      choices: [
-        { id: 13, text: "string" },
-        { id: 14, text: "boolean" },
-        { id: 15, text: "integer" },
-        { id: 16, text: "undefined" },
-      ],
-    },
-  ],
-}
-
 export default function UserTestForm() {
   const [currentUser] = useState({ id: 123, name: "John Doe" }) // Mock user
   const [answers, setAnswers] = useState<Record<number, number>>({})

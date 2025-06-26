@@ -51,7 +51,7 @@ interface Filters {
   status: ApplicationStatus[]
   dateRange: 'all' | 'today' | 'week' | 'month' | '3months'
 }
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [allCandidates, setAllCandidates] = useState<Candidate[]>([]) // Store all candidates for filtering
@@ -79,7 +79,7 @@ export default function CandidatesPage() {
       }
 
       setToken(storedToken)
-      const response = await fetch(`http://localhost:3000/admin/candidates`, {
+      const response = await fetch(`${API_BASE_URL}/admin/candidates`, {
         headers: {
           Authorization: `Bearer ${storedToken}`,
           "Content-Type": "application/json",
@@ -492,7 +492,7 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
   ? `${Math.round((score / totalQuestions.length) * 100)}`
   : '-'
   const hasResume = Boolean(resumePath)
-  const resumeUrl = "http://localhost:3000/" + resumePath
+  const resumeUrl = `${API_BASE_URL}/` + resumePath
 
   // Define the status progression flow
   const getNextStatuses = (currentStatus: ApplicationStatus): ApplicationStatus[] => {
@@ -659,10 +659,10 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
                 <DialogTitle>Resume Preview - {name}</DialogTitle>
                 <DialogDescription>Preview of {name}&apos;s resume document</DialogDescription>
               </DialogHeader>
-              <div className="flex-1 h-[600px] w-full">
+              <div className="flex-1 h-min-[600px] w-full">
                 <iframe
                   src={resumeUrl}
-                  className="w-full h-full border border-slate-200 dark:border-slate-700 rounded-md"
+                  className="w-full h-auto border border-slate-200 dark:border-slate-700 rounded-md"
                   title={`${name}'s Resume`}
                 />
               </div>
@@ -708,7 +708,7 @@ export async function updateCandidateStatus(
   try {
     const token = localStorage.getItem("token")
 
-    const response = await fetch(`http://localhost:3000/admin/update-applicant/${candidateId}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/update-applicant/${candidateId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

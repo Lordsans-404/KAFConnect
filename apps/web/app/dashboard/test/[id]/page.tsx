@@ -73,6 +73,8 @@ interface TestData {
 }
 
 const TIME_PER_QUESTION = 30
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 
 export default function UserTestForm() {
   const [currentUser, setUser] = useState<{
@@ -167,7 +169,7 @@ export default function UserTestForm() {
       }
 
       try {
-        const response = await fetch(`http://localhost:3000/users/test/${testId}`, {
+        const response = await fetch(`${API_BASE_URL}/users/test/${testId}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -213,7 +215,7 @@ export default function UserTestForm() {
       }
 
       try {
-        const res = await fetch(`http://localhost:3000/users/test/${testId}`, {
+        const res = await fetch(`${API_BASE_URL}/users/test/${testId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

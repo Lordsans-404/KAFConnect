@@ -16,6 +16,7 @@ import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
   description: z.string().min(5, { message: "Description must be at least 5 characters." }),
@@ -55,7 +56,7 @@ export function CreateJob({ open, onOpenChange, token }: CreateJobProps) {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
       setIsSubmitting(true)
-      const res = await fetch("http://localhost:3000/admin/new-job", {
+      const res = await fetch(`${API_BASE_URL}/admin/new-job`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -19,6 +19,7 @@ import {
 import {ApplicationDialog} from "@/components/applicant-form"
 
 const JOBS_PER_PAGE = 5
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function JobListings() {
   const [theme, setTheme] = useState<"dark" | "light">("light")
@@ -42,7 +43,7 @@ export default function JobListings() {
       }
 
       try {
-        const res = await fetch("http://localhost:3000/users/dashboard", {
+        const res = await fetch(`${API_BASE_URL}/users/dashboard`, {
           headers: { Authorization: "Bearer " + token },
         })
 

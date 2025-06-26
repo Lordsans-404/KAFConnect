@@ -31,6 +31,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { ApplicationDialog } from "@/components/applicant-form"
 
+// get API url
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function UserDashboard() {
   const { theme, setTheme } = useTheme()
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -57,7 +60,7 @@ export default function UserDashboard() {
       }
 
       try {
-        const res = await fetch("http://localhost:3000/users/dashboard", {
+        const res = await fetch(`${API_BASE_URL}/users/dashboard`, {
           headers: { Authorization: "Bearer " + token },
         })
 

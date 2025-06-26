@@ -13,6 +13,7 @@ interface JobListProps {
   token: any
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export function JobList({ all_jobs = [],all_tests=[], token }: JobListProps) {
   return (
     <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -46,7 +47,7 @@ interface JobRowProps {
   const handleSave = async (values: JobFormValues) => {
     const token = localStorage.getItem("token") // atau ambil dari state/context
     console.log(values)
-    const response = await fetch(`http://localhost:3000/admin/update-job/${job.id}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/update-job/${job.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

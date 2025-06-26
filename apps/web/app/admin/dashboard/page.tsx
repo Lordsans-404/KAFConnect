@@ -9,6 +9,7 @@ import { DashboardContent } from "@/components/admin/dashboard/dashboard-content
 import { LoadingOverlay } from "@/components/admin/dashboard/loading-overlay"
 
 export default function Dashboard() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const router = useRouter()
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isLoading, setIsLoading] = useState(true)
@@ -28,7 +29,7 @@ export default function Dashboard() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:3000/admin/dashboard", {
+        const res = await fetch(`${API_BASE_URL}/admin/dashboard`, {
           headers: { Authorization: "Bearer " + storedToken },
         })
 

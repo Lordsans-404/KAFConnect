@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useEffect, useState } from "react" // Import useState dan useEffect
 import Link from "next/link"
 import { Briefcase, Calendar, Command, MessageSquare, Settings, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -25,11 +26,57 @@ const navigationItems: NavItemData[] = [
   { icon: Users, label: "Users", href: "/admin/dashboard/users", key: "users" },
 ]
 
+function capitalizeFirstLetter(text: string | null | undefined): string {
+  if (!text) {
+    return ""; // Mengembalikan string kosong jika input null, undefined, atau kosong
+  }
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export function DashboardSidebar({ currentPage }: DashboardSidebarProps) {
+  const [userName, setUserName] = useState<string | null>(null) // State untuk menyimpan nama pengguna
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL; // Ambil base URL API dari .env
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const storedToken = localStorage.getItem("token") // Ambil token dari localStorage
+
+      if (storedToken) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/users/profile`, { // Panggil API profil pengguna
+            headers: {
+              Authorization: "Bearer " + storedToken,
+            },
+          })
+
+          if (res.ok) {
+            const data = await res.json()
+            const capitalizedName = capitalizeFirstLetter(data.user.name.split(' ')[0])
+            setUserName(capitalizedName)
+          } else {
+            console.error("Failed to fetch user profile:", res.status, res.statusText)
+            // Handle error, misalnya redirect ke halaman login jika token tidak valid
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error)
+        }
+      }
+    }
+
+    fetchUserName()
+  }, []) // Jalankan hanya sekali saat komponen dimuat
   return (
     <div className="col-span-12 md:col-span-3 lg:col-span-2 md:sticky md:top-4 h-fit">
       <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
         <CardContent className="p-4">
+          {/* Tambahkan sapaan di sini */}
+          {userName && (
+            <div className="mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Halo, {userName}!</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Selamat datang kembali.</p>
+            </div>
+          )}
+
           {/* Main Navigation Menu */}
           <nav className="space-y-2">
             {navigationItems.map((item) => (
@@ -56,7 +103,6 @@ export function DashboardSidebar({ currentPage }: DashboardSidebarProps) {
       </Card>
     </div>
   )
-
 }
 
 interface NavItemProps {

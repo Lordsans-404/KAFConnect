@@ -105,3 +105,28 @@ export class JobApplication {
   @JoinColumn()
   submission: Submission;
 }
+
+
+@Entity()
+export class Material{
+  @PrimaryGeneratedColumn()
+  id:number;
+
+  @Column()
+  title: string;
+
+  @ManyToOne(() => Job)
+  job: Job;
+
+  @Column({nullable:true})
+  materialPath:string
+
+  @Column({nullable:true})
+  materialUrl:string
+
+  @Column('text')
+  description: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  postedAt: Date;
+}

@@ -26,6 +26,7 @@ interface ProfileFormProps {
   }
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export function ProfileForm({ token, data_user }: ProfileFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -62,7 +63,7 @@ export function ProfileForm({ token, data_user }: ProfileFormProps) {
     if(data_user?.profile){
       try {
         const response = await fetch(
-          `http://localhost:3000/users/profile/${data_user.user.id}`,
+          `${API_BASE_URL}/users/profile/${data_user.user.id}`,
           {
             method: 'PATCH',
             headers: {
@@ -104,7 +105,7 @@ export function ProfileForm({ token, data_user }: ProfileFormProps) {
         }
 
         const response = await fetch(
-          `http://localhost:3000/users/profile/${data_user.user.id}`,
+          `${API_BASE_URL}/users/profile/${data_user.user.id}`,
           {
             method: 'POST',
             headers: { 

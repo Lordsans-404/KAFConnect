@@ -40,6 +40,7 @@ interface JobFormValues {
 }
 
 export default function JobsPage() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const [jobs, setJobs] = useState<Job[]>([])
   const [pagination, setPagination] = useState({
     page: 1,
@@ -70,7 +71,7 @@ export default function JobsPage() {
       }
 
       setToken(storedToken)
-      const response = await fetch(`http://localhost:3000/admin/jobs?page=${page}&limit=${limit}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/jobs?page=${page}&limit=${limit}`, {
         headers: {
           Authorization: `Bearer ${storedToken}`,
           "Content-Type": "application/json",
@@ -108,7 +109,7 @@ export default function JobsPage() {
       const storedToken = localStorage.getItem("token")
       if (!storedToken) return
 
-      const response = await fetch("http://localhost:3000/admin/tests", {
+      const response = await fetch(`${API_BASE_URL}/admin/tests`, {
         headers: {
           Authorization: `Bearer ${storedToken}`,
           "Content-Type": "application/json",
@@ -145,7 +146,7 @@ export default function JobsPage() {
 
     try {
       const storedToken = localStorage.getItem("token")
-      const response = await fetch(`http://localhost:3000/admin/update-job/${selectedJob.id}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/update-job/${selectedJob.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

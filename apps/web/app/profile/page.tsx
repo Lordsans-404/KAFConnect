@@ -8,6 +8,7 @@ import { UserProfile } from "@/components/user-profile"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export default function ProfilePage() {
   const [data, setData] = useState<any>(null)
   const [profile,setProfile] = useState<any>(null)
@@ -25,7 +26,7 @@ export default function ProfilePage() {
       }
 
       try {
-        const res = await fetch("http://localhost:3000/users/profile", {
+        const res = await fetch(`${API_BASE_URL}/users/profile`, {
           headers: { Authorization: "Bearer " + token },
         })
 
@@ -59,7 +60,7 @@ export default function ProfilePage() {
       console.log("Resend Verification - Start");
 
       // Basic fetch() request
-      const response = await fetch('http://localhost:3000/users/resend-verification', {
+      const response = await fetch(`${API_BASE_URL}/users/resend-verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

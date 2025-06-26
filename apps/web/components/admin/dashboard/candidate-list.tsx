@@ -68,13 +68,14 @@ export enum ApplicationStatus {
   REJECTED = "rejected",
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 function CandidateRow({ id, name, email, position, status, date, resumePath, onStatusUpdated }: CandidateRowProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [currentStatus, setCurrentStatus] = useState(status)
 
   const hasResume = Boolean(resumePath)
-  const resumeUrl = "http://localhost:3000/" + resumePath
+  const resumeUrl = `${API_BASE_URL}/` + resumePath
 
   // Define the status progression flow
   const getNextStatuses = (currentStatus: ApplicationStatus): ApplicationStatus[] => {
@@ -294,7 +295,7 @@ export async function updateCandidateStatus(
     const token = localStorage.getItem("token")
 
     // Here you would make your actual API call
-    const response = await fetch(`http://localhost:3000/admin/update-applicant/${candidateId}`, {
+    const response = await fetch(`${API_BASE_URL}/admin/update-applicant/${candidateId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

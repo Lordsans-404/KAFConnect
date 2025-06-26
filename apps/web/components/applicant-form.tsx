@@ -41,6 +41,7 @@ interface ApplicationDialogProps {
   trigger?: React.ReactNode
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export function ApplicationDialog({ job, token, onSubmit, trigger }: ApplicationDialogProps) {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -110,7 +111,7 @@ export function ApplicationDialog({ job, token, onSubmit, trigger }: Application
       form.append("file", uploadedFile)
 
       // Call the API to submit application
-      const response = await fetch("http://localhost:3000/users/apply-job", {
+      const response = await fetch(`${API_BASE_URL}/users/apply-job`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

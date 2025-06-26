@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
 
@@ -20,7 +22,7 @@ export function RegisterForm({ switchToLogin }: { switchToLogin: () => void }) {
     const email = document.getElementById('email').value
     const password = document.getElementById('password').value
 
-    const res = await fetch('http://localhost:3000/users/register', {
+    const res = await fetch(`${API_BASE_URL}/users/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),

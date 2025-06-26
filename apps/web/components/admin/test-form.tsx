@@ -24,7 +24,8 @@ export function TestCreatorForm({ userId, onSubmit, token, open, onOpenChange })
       }
     ]
   });
-  const apiUrl = 'http://localhost:3000/admin/new-test'
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const apiUrl = `${API_BASE_URL}/admin/new-test`
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeQuestion, setActiveQuestion] = useState(0);
   const [submitMessage, setSubmitMessage] = useState({ type: '', text: '' });
