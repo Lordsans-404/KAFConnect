@@ -35,12 +35,49 @@ export class JobsService {
     return this.jobRepository.save(job);
   }
 
+  async findOne(id:number){
+    const job = await this.jobRepository.findOne({where: {id}})
+    if (!job) {
+      throw new NotFoundException('Pekerjaan tidak ditemukan.');
+    }
+    return this.checkExpiredJob(job)
+  }
+
+  // To check if the job is expired
+  async checkExpiredJob(job: Job): Promise<Job>{
+    if(job.closingDate && job.closingDate < new Date() && job.isActive){
+      job.isActive = false;
+      await this.jobRepository.save(job)
+    }
+    return job;
+  }
+
+  async checkExpMultipleJob(jobs:Job[]): Promise<Job[]>{
+    const expiredJobs = jobs.filter(
+      job => job.closingDate && job.closingDate < new Date() && job.isActive
+    ); // cek apakah closingDate ada dan waktu sekarang telah melebihi closingDate, dan isActive true
+
+
+    if (expiredJobs.length > 0) {
+      await this.jobRepository.save(
+        expiredJobs.map(job => ({ ...job, isActive: false }))
+      );
+    }
+    return jobs.map(job => {
+      if (job.closingDate && job.closingDate < new Date()) {
+        job.isActive = false;
+      }
+      return job;
+    });
+  }
+
   async getAllJobs() {
     // Old version: no pagination
-    return this.jobRepository.find({
+    const job = await this.jobRepository.find({
       relations: ['applications'],
       take: 5, // default limit
     });
+    return this.checkExpMultipleJob(job)
   }
 
   async getDepartmentStats() {
@@ -79,7 +116,7 @@ export class JobsService {
     const employmentStats = await this.getEmploymentTypeStats();
 
     return {
-      data: jobs,
+      data: this.checkExpMultipleJob(jobs),
       total,
       page,
       limit: take,
@@ -111,7 +148,7 @@ export class JobsService {
 
   // Get all jobs except the one that user have Not applied
   async getUnappliedJobs(userId: any): Promise<Job[]> {
-    return this.jobRepository
+    const jobs = await this.jobRepository
       .createQueryBuilder('job')
       .leftJoin(
         'job.applications',
@@ -122,6 +159,7 @@ export class JobsService {
       .where('application.id IS NULL')
       .andWhere('job.isActive = :isActive', { isActive: true })
       .getMany();
+    return this.checkExpMultipleJob(jobs)
   }
 
   // Get jobs that user HAS applied to
@@ -145,9 +183,12 @@ export class JobsService {
     const job = await this.jobRepository.findOne({
       where: {id: dto.jobId, isActive: true}
     })
+
     if (!job) {
       throw new NotFoundException('Pekerjaan tidak ditemukan.');
     }
+    this.checkExpiredJob(job)
+    
     const user = await this.userRepository.findOne({ where: { id: dto.applicantId } });
     if (!user) {
       throw new NotFoundException('User tidak ditemukan.');

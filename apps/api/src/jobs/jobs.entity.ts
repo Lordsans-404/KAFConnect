@@ -2,6 +2,31 @@ import { Entity, PrimaryGeneratedColumn, JoinColumn, Column, ManyToOne, OneToMan
 import { User } from '../users/users.entity';
 import { Test, Submission } from '../evaluation/evaluation.entity';
 
+
+@Entity()
+export class Material{
+  @PrimaryGeneratedColumn()
+  id:number;
+
+  @Column()
+  title: string;
+
+  @OneToMany(() => Job, job => job.material)
+  jobs: Job[];
+
+  @Column({nullable:true})
+  materialPath:string
+
+  @Column({nullable:true})
+  materialUrl:string
+
+  @Column('text')
+  description: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  postedAt: Date;
+}
+
 export enum EmploymentType {
   FULL_TIME = 'full-time',
   PART_TIME = 'part-time',
@@ -57,6 +82,9 @@ export class Job {
 
   @OneToMany(() => JobApplication, application => application.job)
   applications: JobApplication[];
+
+  @ManyToOne(() => Material, material => material.jobs,{onDelete:"SET NULL"})
+  material: Material | null;
 }
 
 export enum ApplicationStatus {
@@ -106,27 +134,3 @@ export class JobApplication {
   submission: Submission;
 }
 
-
-@Entity()
-export class Material{
-  @PrimaryGeneratedColumn()
-  id:number;
-
-  @Column()
-  title: string;
-
-  @ManyToOne(() => Job)
-  job: Job;
-
-  @Column({nullable:true})
-  materialPath:string
-
-  @Column({nullable:true})
-  materialUrl:string
-
-  @Column('text')
-  description: string;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  postedAt: Date;
-}
