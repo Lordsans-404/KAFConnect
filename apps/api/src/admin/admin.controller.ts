@@ -1,7 +1,8 @@
-import { Controller, Post, Req, Get, Body, Put, Logger, Query, Param, ParseIntPipe, UseGuards, SetMetadata, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Req, Get, Body, Put, Logger, Query, Param, ParseIntPipe, UseGuards, UploadedFile, SetMetadata, ForbiddenException, UseInterceptors } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateJobDto, UpdateJobDto } from '../jobs/dto/job.dto';
 import { UpdateJobApplicationDto, CreateJobApplicationDto } from '../jobs/dto/createApplicationJob.dto';
+import { CreateMaterialDto } from '../jobs/dto/material.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Job } from '../jobs/jobs.entity';
@@ -9,7 +10,10 @@ import { UsersService } from '../users/users.service';
 import { JobsService } from '../jobs/jobs.service';
 import { EvaluationService } from '../evaluation/evaluation.service';
 import { CreateTestDto, CreateChoiceDto, CreateQuestionDto } from '../evaluation/dto/create-test.dto' 
-
+import { FileInterceptor } from '@nestjs/platform-express'
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import * as crypto from 'crypto';
 
 @Controller('admin')
 export class AdminController {
@@ -46,6 +50,15 @@ export class AdminController {
     return this.jobsService.getPaginatedJobs(pageNumber, limitNumber);
   }
 
+  @Get('tests')
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @SetMetadata('roles', ['super_admin', 'admin', 'staff'])
+  async getTests(@Req() req){
+    const all_tests = await this.evaluationService.getAllTests()
+    return all_tests
+  }
+
+
   @Get('candidates') 
   @UseGuards(JwtAuthGuard,RolesGuard)
   @SetMetadata('roles', ['super_admin', 'admin', 'staff'])
@@ -68,10 +81,34 @@ export class AdminController {
   }
 
   @Post('new-test')
+  @UseGuards(JwtAuthGuard,RolesGuard)  
   async newTest(@Body() dto: CreateTestDto){
     return this.evaluationService.createTest(dto)
   }
 
+  @Post('new-material')
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @UseInterceptors(FileInterceptor('file',{
+    storage: diskStorage({
+      destination: './uploads/materials',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now();
+        const fileExtName = extname(file.originalname);
+        const safeTitle = req.body?.title?.replace(/\s+/g, '_') || 'material';
+        cb(null, `${safeTitle}-${uniqueSuffix}${fileExtName}`);
+      },
+    }),
+  }))
+  async createMaterial(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: CreateMaterialDto,
+  ) {
+    const dto: CreateMaterialDto = {
+      ...body,
+      materialPath: file?.path || undefined,
+    };
+    return this.jobsService.createMaterial(dto);
+  }
   @Put('update-job/:id')
   @UseGuards(JwtAuthGuard,RolesGuard)
   updateJob(

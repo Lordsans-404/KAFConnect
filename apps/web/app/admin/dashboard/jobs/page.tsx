@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +9,13 @@ import { JobDetailDialog } from "@/components/admin/job-detail"
 import { CreateJob } from "@/components/create-job"
 import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
 import { JobAnalytics } from "@/components/admin/job-analytics"
+import {jwtDecode} from "jwt-decode"
 
+// --- type fix ---
+interface AnalyticsData {
+  departmentStats: any[]
+  employmentStats: any[]
+}
 
 interface Job {
   id: string
@@ -26,6 +32,8 @@ interface JobsResponse {
   page: number
   limit: number
   totalPages: number
+  departmentStats?: any[]
+  employmentStats?: any[]
 }
 
 interface JobFormValues {
@@ -40,7 +48,7 @@ interface JobFormValues {
 }
 
 export default function JobsPage() {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
   const [jobs, setJobs] = useState<Job[]>([])
   const [pagination, setPagination] = useState({
     page: 1,
@@ -48,7 +56,6 @@ export default function JobsPage() {
     total: 0,
     totalPages: 0,
   })
-  const currentPage = "jobs"
   const [loading, setLoading] = useState(true)
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [dialogOpenDetail, setDialogOpenDetail] = useState(false)
@@ -59,18 +66,21 @@ export default function JobsPage() {
     departmentStats: [],
     employmentStats: [],
   })
+  const [user, setUser] = useState<any>({})
 
-  const fetchJobs = async (page = 1, limit = 5) => {
+  const fetchJobs = useCallback(async (page = 1, limit = 10) => {
+    const storedToken = localStorage.getItem("token")
+    
+    if (!storedToken) {
+      alert("No token found. Please login.")
+      window.location.href = "/"
+      return
+    }
+    setUser(jwtDecode(storedToken))
+    setToken(storedToken)
+    setLoading(true)
+
     try {
-      setLoading(true)
-      const storedToken = localStorage.getItem("token")
-      if (!storedToken) {
-        alert("No token found. Please login.")
-        window.location.href = "/"
-        return
-      }
-
-      setToken(storedToken)
       const response = await fetch(`${API_BASE_URL}/admin/jobs?page=${page}&limit=${limit}`, {
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -96,26 +106,21 @@ export default function JobsPage() {
         departmentStats: data.departmentStats || [],
         employmentStats: data.employmentStats || [],
       })
-
     } catch (error) {
       console.error("Error fetching jobs:", error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [API_BASE_URL])
 
-  const fetchTests = async () => {
+  const fetchTests = useCallback(async () => {
     try {
-      const storedToken = localStorage.getItem("token")
-      if (!storedToken) return
-
       const response = await fetch(`${API_BASE_URL}/admin/tests`, {
         headers: {
-          Authorization: `Bearer ${storedToken}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       })
-
       if (response.ok) {
         const tests = await response.json()
         setAllTests(tests)
@@ -123,12 +128,16 @@ export default function JobsPage() {
     } catch (error) {
       console.error("Error fetching tests:", error)
     }
-  }
+  }, [API_BASE_URL])
 
   useEffect(() => {
-    fetchJobs()
-    fetchTests()
-  }, [])
+    let mounted = true
+    Promise.all([fetchJobs(), fetchTests()])
+      .catch((err) => console.error("Error fetching initial data", err))
+    return () => {
+      mounted = false
+    }
+  }, [fetchJobs, fetchTests])
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -160,12 +169,10 @@ export default function JobsPage() {
         throw new Error(error.message || "Failed to update job")
       }
 
-      // Refresh the jobs list after successful update
       fetchJobs(pagination.page, pagination.limit)
       setDialogOpenDetail(false)
     } catch (error) {
       console.error("Error updating job:", error)
-      throw error
     }
   }
 
@@ -186,12 +193,11 @@ export default function JobsPage() {
     }
     return "Just now"
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="container mx-auto p-6">
         <div className="grid grid-cols-12 gap-6">
-          <DashboardSidebar currentPage={currentPage} />
+          <DashboardSidebar currentPage={'jobs'} user={user} />
           <div className="col-span-12 md:col-span-9 lg:col-span-10">
             <div className="space-y-6">
               <div className="flex justify-between items-center">

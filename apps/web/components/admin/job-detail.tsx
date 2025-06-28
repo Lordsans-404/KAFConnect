@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect} from "react"
 import ReactSelect from 'react-select'
 
 import { format } from "date-fns"
@@ -174,7 +174,6 @@ export function JobDetailDialog({
     value: test.id,
     label: test.title,
   }))
-
   const filteredTests = tests.filter(test =>
     test.title.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -185,6 +184,7 @@ export function JobDetailDialog({
     control,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<JobFormValues>({
     shouldUnregister: false,
@@ -204,6 +204,25 @@ export function JobDetailDialog({
     },
   })
 
+  useEffect(() => {
+    if (job) {
+      reset({
+        title: job.title || "",
+        description: job.description || "",
+        requirements: job.requirements || "",
+        department: job.department || "",
+        position: job.position || "",
+        employmentType: job.employmentType || EmploymentType.FULL_TIME,
+        location: job.location || "",
+        salaryRange: job.salaryRange || "",
+        postedBy: job.postedBy,
+        closingDate: job.closingDate ? new Date(job.closingDate) : undefined,
+        isActive: job.isActive ?? true,
+        testId: job.testId,
+      })
+    }
+  }, [job, reset])
+
   async function onSubmit(values: JobFormValues) {
     try {
       setIsSubmitting(true)
@@ -215,7 +234,6 @@ export function JobDetailDialog({
       setIsSubmitting(false)
     }
   }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
@@ -302,19 +320,21 @@ export function JobDetailDialog({
             control={control}
             name="testId"
             render={({ field }) => (
-              <div>
-                <p>Active Test : {field.value}</p>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {job?.testId?.title ? `Active Test: ${job.testId.title}` : "No test selected"}
+                </p>
                 <ReactSelect
-                  styles={customStyles} 
+                  styles={customStyles}
                   value={testOptions.find(option => option.value === field.value) || null}
                   onChange={option => field.onChange(option?.value)}
                   options={testOptions}
                   isClearable
                   placeholder="Select a test..."
-                  className="bg-dark"
                 />
               </div>
-            )}
+              )
+            }
           />
 
           <Controller

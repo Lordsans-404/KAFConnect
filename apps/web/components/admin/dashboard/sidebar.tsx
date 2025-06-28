@@ -10,6 +10,7 @@ import { StatusItem } from "@/components/admin/dashboard/status-item"
 
 interface DashboardSidebarProps {
   currentPage: string
+  user:any
 }
 
 interface NavItemData {
@@ -33,38 +34,9 @@ function capitalizeFirstLetter(text: string | null | undefined): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-export function DashboardSidebar({ currentPage }: DashboardSidebarProps) {
-  const [userName, setUserName] = useState<string | null>(null) // State untuk menyimpan nama pengguna
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL; // Ambil base URL API dari .env
+export function DashboardSidebar({ currentPage,user }: DashboardSidebarProps) {
+  const userName = capitalizeFirstLetter(user?.name?.split(' ')[0])
 
-  useEffect(() => {
-    const fetchUserName = async () => {
-      const storedToken = localStorage.getItem("token") // Ambil token dari localStorage
-
-      if (storedToken) {
-        try {
-          const res = await fetch(`${API_BASE_URL}/users/profile`, { // Panggil API profil pengguna
-            headers: {
-              Authorization: "Bearer " + storedToken,
-            },
-          })
-
-          if (res.ok) {
-            const data = await res.json()
-            const capitalizedName = capitalizeFirstLetter(data.user.name.split(' ')[0])
-            setUserName(capitalizedName)
-          } else {
-            console.error("Failed to fetch user profile:", res.status, res.statusText)
-            // Handle error, misalnya redirect ke halaman login jika token tidak valid
-          }
-        } catch (error) {
-          console.error("Error fetching user profile:", error)
-        }
-      }
-    }
-
-    fetchUserName()
-  }, []) // Jalankan hanya sekali saat komponen dimuat
   return (
     <div className="col-span-12 md:col-span-3 lg:col-span-2 md:sticky md:top-4 h-fit">
       <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">

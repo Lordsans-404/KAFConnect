@@ -39,3 +39,4 @@ yarn-error.log*
 
 #public
 apps/api/uploads/resume-user/*.pdf
+apps/api/uploads/materials/*.pdf

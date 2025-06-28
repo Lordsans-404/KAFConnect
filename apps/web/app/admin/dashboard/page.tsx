@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes"
 import { DashboardLayout } from "@/components/admin/dashboard/layout"
 import { DashboardContent } from "@/components/admin/dashboard/dashboard-content"
 import { LoadingOverlay } from "@/components/admin/dashboard/loading-overlay"
+import {jwtDecode} from "jwt-decode"
 
 export default function Dashboard() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -14,12 +15,13 @@ export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isLoading, setIsLoading] = useState(true)
   const [data, setData] = useState<any>({})
+  const [user, setUser] = useState<any>({})
   const [token, setToken] = useState<string | null>(null)
 
   // Authentication and Data Fetch
   useEffect(() => {
     const storedToken = localStorage.getItem("token")
-    console.log(storedToken)
+    setUser(jwtDecode(storedToken))
     setToken(storedToken)
     if (!storedToken) {
       alert("Please login first")
@@ -52,7 +54,6 @@ export default function Dashboard() {
 
     fetchData()
   }, [router])
-
   // Real-time Clock
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,14 +68,13 @@ export default function Dashboard() {
       month: "short",
       day: "numeric",
     })
-
   return (
     <ThemeProvider attribute="class">
       <div className="min-h-screen bg-gradient-to-br from-slate-100 to-white dark:from-slate-900 dark:to-slate-800 text-slate-800 dark:text-slate-100 relative">
         {isLoading && <LoadingOverlay />}
 
-        <DashboardLayout>
-          <DashboardContent data={data} currentTime={currentTime} formatDate={formatDate} token={token} />
+        <DashboardLayout user={user} >
+          <DashboardContent data={data} currentTime={currentTime} formatDate={formatDate} token={token} user={user} />
         </DashboardLayout>
       </div>
     </ThemeProvider>

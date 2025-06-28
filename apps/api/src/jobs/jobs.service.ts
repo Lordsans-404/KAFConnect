@@ -1,13 +1,15 @@
 import { Injectable,
   ConflictException, 
   UnauthorizedException,
+  BadRequestException,
   NotFoundException
  } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Job,JobApplication, ApplicationStatus } from './jobs.entity';
+import { Job,JobApplication, ApplicationStatus, Material } from './jobs.entity';
 import { User } from '../users/users.entity';
 import { CreateJobDto, UpdateJobDto } from './dto/job.dto';
+import { CreateMaterialDto } from './dto/material.dto';
 import { CreateJobApplicationDto, UpdateJobApplicationDto } from './dto/createApplicationJob.dto';
 
 @Injectable()
@@ -19,12 +21,27 @@ export class JobsService {
       private readonly jobApplicationRepository: Repository<JobApplication>,
     @InjectRepository(User)
       private readonly userRepository: Repository<User>,
-
+    @InjectRepository(Material)
+      private readonly materialRepository: Repository<Material>,
 	){}
 
 	async createJob(createJobDto: CreateJobDto): Promise<Job> {
     const job = this.jobRepository.create(createJobDto);
     return this.jobRepository.save(job);
+  }
+
+  async createMaterial(dto: CreateMaterialDto): Promise<Material>{
+    if(!dto.materialPath && !dto.materialUrl){
+      throw new BadRequestException("Must fill the file or url")
+    }
+    const material = this.materialRepository.create({
+      title: dto.title,
+      description: dto.description,
+      materialPath: dto.materialPath,
+      materialUrl: dto.materialUrl,
+    });
+    return await this.materialRepository.save(material);
+
   }
 
   async updateJob(id: number, updateJobDto: UpdateJobDto): Promise<Job> {
@@ -35,7 +52,7 @@ export class JobsService {
     return this.jobRepository.save(job);
   }
 
-  async findOne(id:number){
+  async findOneJob(id:number){
     const job = await this.jobRepository.findOne({where: {id}})
     if (!job) {
       throw new NotFoundException('Pekerjaan tidak ditemukan.');
@@ -107,7 +124,7 @@ export class JobsService {
     const skip = (page - 1) * take;
 
     const [jobs, total] = await this.jobRepository.findAndCount({
-      relations: ['applications'],
+      relations: ['applications','testId'],
       skip,
       take,
     });
@@ -116,7 +133,7 @@ export class JobsService {
     const employmentStats = await this.getEmploymentTypeStats();
 
     return {
-      data: this.checkExpMultipleJob(jobs),
+      data: await this.checkExpMultipleJob(jobs),
       total,
       page,
       limit: take,

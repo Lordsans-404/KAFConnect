@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {jwtDecode} from "jwt-decode"
 import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
 
 interface Candidate {
@@ -62,6 +63,7 @@ export default function CandidatesPage() {
     totalPages: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<any>({})
   const [token, setToken] = useState<string>("")
   const [filters, setFilters] = useState<Filters>({
     status: [],
@@ -77,7 +79,7 @@ export default function CandidatesPage() {
         window.location.href = "/"
         return
       }
-
+      setUser(jwtDecode(storedToken))
       setToken(storedToken)
       const response = await fetch(`${API_BASE_URL}/admin/candidates`, {
         headers: {
@@ -247,7 +249,7 @@ export default function CandidatesPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="container mx-auto p-6">
         <div className="grid grid-cols-12 gap-6">
-          <DashboardSidebar currentPage={currentPage} />
+          <DashboardSidebar currentPage={currentPage} user={user} />
           <div className="col-span-12 md:col-span-9 lg:col-span-10">
 
             <div className="space-y-6">
