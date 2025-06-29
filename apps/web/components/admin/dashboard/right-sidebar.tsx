@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, FileText } from "lucide-react"
+import { Calendar, FileText, FilePlus2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { StatBox } from "@/components/admin/dashboard/stat-box"
@@ -8,6 +8,7 @@ import { CreateJob } from "@/components/create-job"
 import { CreateStaff } from "@/components/create-staff"
 import { TestCreatorForm } from "@/components/admin/test-form"
 import { Button } from "@/components/ui/button"
+import { MaterialDialog } from "@/components/admin/material-form"
 
 interface RightSidebarProps {
   data: any
@@ -64,7 +65,19 @@ export function RightSidebar({ data, currentTime, formatDate, token, user }: Rig
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <CreateStaff />
+                {user?.level === "admin" || user?.level === "super_admin" ?
+                (<CreateStaff />):
+                (
+
+                  <MaterialDialog token={token}>
+                    <ActionButton 
+                      icon={FilePlus2} 
+                      label="New Material" 
+                    />
+                  </MaterialDialog> 
+                )
+                }
+                
                 <ActionButton icon={FileText} label="New Job" onClick={() => setOpenDialogNewJob(true)} />
                 <ActionButton icon={FileText} label="New Test" onClick={() => setOpenDialogTest(true)} />
                 <ActionButton icon={FileText} label="Reports" />

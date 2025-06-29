@@ -325,7 +325,7 @@ export default function UserDashboard() {
                       </div>
                     </div>
                     <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
-                      <div className="text-2xl font-bold">{data?.appliedJobs?.length || 0}</div>
+                      <div className="text-2xl font-bold">{data?.dataApplicants?.data.length || 0}</div>
                       <div className="text-xs">Active Applications</div>
                     </div>
                   </div>
@@ -359,7 +359,7 @@ export default function UserDashboard() {
                     </CardHeader>
                     <CardContent className="p-0">
                       <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {data?.appliedJobs?.map((appJob, index) => (
+                        {data?.dataApplicants?.data.map((appJob, index) => (
                           <ApplicationItem key={index} appliedJob={appJob} />
                         )) || (
                           <div className="p-8 text-center text-slate-500 dark:text-slate-400">No applications yet</div>
@@ -387,7 +387,7 @@ export default function UserDashboard() {
                     </CardHeader>
                     <CardContent className="p-0">
                       <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {data?.jobs
+                        {data?.dataJobs.jobs
                           ?.slice(0, 3)
                           .map((job, index) => <JobItem key={index} token={token} job={job} match={95} />) || (
                           <div className="p-8 text-center text-slate-500 dark:text-slate-400">

@@ -164,8 +164,11 @@ export class JobsService {
 
 
   // Get all jobs except the one that user have Not applied
-  async getUnappliedJobs(userId: any): Promise<Job[]> {
-    const jobs = await this.jobRepository
+  async getUnappliedJobs(userId: number, page = 1, limit = 8) {
+    const take = limit;
+    const skip = (page - 1) * take;
+
+    const [jobs, total] = await this.jobRepository
       .createQueryBuilder('job')
       .leftJoin(
         'job.applications',
@@ -175,19 +178,40 @@ export class JobsService {
       )
       .where('application.id IS NULL')
       .andWhere('job.isActive = :isActive', { isActive: true })
-      .getMany();
-    return this.checkExpMultipleJob(jobs)
+      .skip(skip)
+      .take(take)
+      .leftJoinAndSelect('job.testId', 'test') // Include relasi jika dibutuhkan
+      .leftJoinAndSelect('job.applications', 'applications') // Optional
+      .getManyAndCount();
+
+    return {
+      data: await this.checkExpMultipleJob(jobs),
+      total,
+      page,
+      limit: take,
+      totalPages: Math.ceil(total / take),
+    };
   }
 
   // Get jobs that user HAS applied to
-  async getAppliedJobs(userId: any): Promise<JobApplication[]> {
-    return this.jobApplicationRepository
+  async getAppliedJobs(userId: any,page = 1, limit = 4){
+    const take = limit;
+    const skip = (page - 1) * take;
+    const [appliedJobs, total] = await this.jobApplicationRepository
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.job', 'job')
       .leftJoinAndSelect('job.testId', 'testId')
       .where('application.userApplicant.id = :userId', { userId })
-      .andWhere('job.isActive = :isActive', { isActive: true })
-      .getMany();
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+    return {
+      data : appliedJobs,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / take),  
+    }
   }
 
   async getAllApplicants(){

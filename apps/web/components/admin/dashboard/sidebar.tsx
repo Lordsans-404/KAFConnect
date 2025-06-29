@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react" // Import useState dan useEffect
+import { useEffect, useState } from "react" 
 import Link from "next/link"
 import { Briefcase, Calendar, Command, MessageSquare, Settings, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -29,19 +29,29 @@ const navigationItems: NavItemData[] = [
 
 function capitalizeFirstLetter(text: string | null | undefined): string {
   if (!text) {
-    return ""; // Mengembalikan string kosong jika input null, undefined, atau kosong
+    return ""; 
   }
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-export function DashboardSidebar({ currentPage,user }: DashboardSidebarProps) {
+export function DashboardSidebar({ currentPage, user }: DashboardSidebarProps) {
   const userName = capitalizeFirstLetter(user?.name?.split(' ')[0])
+
+  const hasAdminAccess = ['super_admin', 'admin'].includes(user?.level);
+
+  const visibleNavItems = navigationItems.filter(item => {
+    // Jika item adalah 'users', periksa apakah pengguna memiliki hak akses admin
+    if (item.key === 'users') {
+      return hasAdminAccess;
+    }
+    // Untuk semua item lainnya, selalu tampilkan
+    return true;
+  });
 
   return (
     <div className="col-span-12 md:col-span-3 lg:col-span-2 md:sticky md:top-4 h-fit">
       <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
         <CardContent className="p-4">
-          {/* Tambahkan sapaan di sini */}
           {userName && (
             <div className="mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
               <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Halo, {userName}!</h2>
@@ -49,9 +59,9 @@ export function DashboardSidebar({ currentPage,user }: DashboardSidebarProps) {
             </div>
           )}
 
-          {/* Main Navigation Menu */}
           <nav className="space-y-2">
-            {navigationItems.map((item) => (
+            {/* <-- 3. Gunakan array yang sudah difilter untuk di-render */}
+            {visibleNavItems.map((item) => (
               <NavItem
                 key={item.key}
                 icon={item.icon}
@@ -62,7 +72,6 @@ export function DashboardSidebar({ currentPage,user }: DashboardSidebarProps) {
             ))}
           </nav>
 
-          {/* Recruitment Statistics Section */}
           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
             <div className="text-xs text-slate-500 mb-2 font-medium">RECRUITMENT STATS</div>
             <div className="space-y-3">
@@ -77,6 +86,7 @@ export function DashboardSidebar({ currentPage,user }: DashboardSidebarProps) {
   )
 }
 
+// ... (Komponen NavItem tetap sama, tidak perlu diubah)
 interface NavItemProps {
   icon: React.ElementType
   label: string

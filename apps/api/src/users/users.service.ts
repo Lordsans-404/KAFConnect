@@ -99,7 +99,7 @@ export class UsersService {
     const profile = await this.profileByUserId(req.id);
     const jobs = await this.jobsService.getUnappliedJobs(req.id)
     const appliedJobs = await this.jobsService.getAppliedJobs(req.id)
-    return { profile, jobs,appliedJobs };
+    return { profile, dataJobs:jobs,dataApplicants:appliedJobs };
   }
 
   async sendVerificationEmail(email: string, token: string) {
