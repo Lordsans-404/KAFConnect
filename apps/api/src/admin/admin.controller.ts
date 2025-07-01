@@ -72,6 +72,26 @@ export class AdminController {
     return this.jobsService.getPaginatedJobApplications(pageNumber, limitNumber);
   }
 
+  @Get('users-profile')
+  async getUserProfiles(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
+    return this.usersService.getPaginatedUserProfiles(pageNum, limitNum);
+  }
+
+  @Get('materials')
+  async getMaterials(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
+    return this.jobsService.getAllMaterials(pageNum, limitNum);
+  }
+
   // Post
   @Post('new-job')
   @UseGuards(JwtAuthGuard,RolesGuard)  

@@ -123,7 +123,7 @@ export function JobAnalytics({ analyticsData }: JobAnalyticsProps) {
       {/* Charts Section */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Department Applications Chart */}
-        <Card className="w-full min-w-0 overflow-hidden">
+        <Card className="w-full min-w-0 overflow-hidden" data-chart="department-analytics">
           <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
             <CardTitle className="text-sm sm:text-base lg:text-lg truncate">
               Applications by Department
@@ -189,7 +189,7 @@ export function JobAnalytics({ analyticsData }: JobAnalyticsProps) {
         </Card>
 
         {/* Employment Type Applications Chart */}
-        <Card className="w-full min-w-0 overflow-hidden">
+        <Card className="w-full min-w-0 overflow-hidden" data-chart="employment-analytics">
           <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
             <CardTitle className="text-sm sm:text-base lg:text-lg truncate">
               Applications by Employment Type

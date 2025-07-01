@@ -44,6 +44,23 @@ export class JobsService {
 
   }
 
+  async getAllMaterials(page = 1, limit = 1){
+    const take = limit;
+    const skip = (page - 1) * take;
+
+    const [materials, total] = await this.materialRepository.findAndCount({
+      take,
+      skip,
+    });
+    return{
+      data: materials,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total/take)
+    }
+  }
+
   async updateJob(id: number, updateJobDto: UpdateJobDto): Promise<Job> {
     const job = await this.jobRepository.findOne({ where: { id } });
     if (!job) throw new NotFoundException(`Job with ID ${id} not found`);

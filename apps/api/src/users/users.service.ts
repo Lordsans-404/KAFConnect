@@ -205,4 +205,24 @@ export class UsersService {
   async save(user: User): Promise<User> {
     return this.userRepo.save(user);
   }
+
+  async getPaginatedUserProfiles(page = 1, limit = 10) {
+    const take = limit;
+    const skip = (page - 1) * take;
+
+    const [profiles, total] = await this.userProfileRepository.findAndCount({
+      relations: ['user'],
+      take,
+      skip,
+      order: { profile_id: 'ASC' },
+    });
+
+    return {
+      data: profiles,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / take),
+    };
+  }
 }

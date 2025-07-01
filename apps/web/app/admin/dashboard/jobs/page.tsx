@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight, Loader2, PlusCircle } from "lucide-react"
+import { ChevronLeft, ChevronRight, Loader2, PlusCircle, FileText, FileSpreadsheet } from "lucide-react"
 import { JobDetailDialog } from "@/components/admin/job-detail"
 import { CreateJob } from "@/components/create-job"
 import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
 import { JobAnalytics } from "@/components/admin/job-analytics"
-import {jwtDecode} from "jwt-decode"
+import { jwtDecode } from "jwt-decode"
+import { generateJobsPDFReport, generateJobsExcelReport } from "@/components/admin/dashboard/jobs-report-generator"
 
-// --- type fix ---
 interface AnalyticsData {
   departmentStats: any[]
   employmentStats: any[]
@@ -57,6 +57,7 @@ export default function JobsPage() {
     totalPages: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [exportLoading, setExportLoading] = useState(false)
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [dialogOpenDetail, setDialogOpenDetail] = useState(false)
   const [dialogOpenNew, setDialogOpenNew] = useState(false)
@@ -68,50 +69,50 @@ export default function JobsPage() {
   })
   const [user, setUser] = useState<any>({})
 
-  const fetchJobs = useCallback(async (page = 1, limit = 10) => {
-    const storedToken = localStorage.getItem("token")
-    
-    if (!storedToken) {
-      alert("No token found. Please login.")
-      window.location.href = "/"
-      return
-    }
-    setUser(jwtDecode(storedToken))
-    setToken(storedToken)
-    setLoading(true)
+  const fetchJobs = useCallback(
+    async (page = 1, limit = 10) => {
+      const storedToken = localStorage.getItem("token")
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/jobs?page=${page}&limit=${limit}`, {
-        headers: {
-          Authorization: `Bearer ${storedToken}`,
-          "Content-Type": "application/json",
-        },
-      })
-
-      if (!response.ok) {
-        alert("Token invalid atau expired. Silakan login ulang.")
+      if (!storedToken) {
+        alert("No token found. Please login.")
         window.location.href = "/"
         return
       }
-
-      const data: JobsResponse = await response.json()
-      setJobs(data.data)
-      setPagination({
-        page: data.page,
-        limit: data.limit,
-        total: data.total,
-        totalPages: data.totalPages,
-      })
-      setAnalyticsData({
-        departmentStats: data.departmentStats || [],
-        employmentStats: data.employmentStats || [],
-      })
-    } catch (error) {
-      console.error("Error fetching jobs:", error)
-    } finally {
-      setLoading(false)
-    }
-  }, [API_BASE_URL])
+      setUser(jwtDecode(storedToken))
+      setToken(storedToken)
+      setLoading(true)
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/jobs?page=${page}&limit=${limit}`, {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+            "Content-Type": "application/json",
+          },
+        })
+        if (!response.ok) {
+          alert("Token invalid atau expired. Silakan login ulang.")
+          window.location.href = "/"
+          return
+        }
+        const data: JobsResponse = await response.json()
+        setJobs(data.data)
+        setPagination({
+          page: data.page,
+          limit: data.limit,
+          total: data.total,
+          totalPages: data.totalPages,
+        })
+        setAnalyticsData({
+          departmentStats: data.departmentStats || [],
+          employmentStats: data.employmentStats || [],
+        })
+      } catch (error) {
+        console.error("Error fetching jobs:", error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [API_BASE_URL],
+  )
 
   const fetchTests = useCallback(async () => {
     try {
@@ -128,12 +129,37 @@ export default function JobsPage() {
     } catch (error) {
       console.error("Error fetching tests:", error)
     }
-  }, [API_BASE_URL])
+  }, [API_BASE_URL, token])
+
+  const handleExportPDF = async () => {
+    try {
+      setExportLoading(true)
+      // Wait a bit for charts to render properly
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await generateJobsPDFReport(jobs, analyticsData)
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      alert("Failed to generate PDF report")
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
+  const handleExportExcel = async () => {
+    try {
+      setExportLoading(true)
+      await generateJobsExcelReport(jobs, analyticsData)
+    } catch (error) {
+      console.error("Error generating Excel:", error)
+      alert("Failed to generate Excel report")
+    } finally {
+      setExportLoading(false)
+    }
+  }
 
   useEffect(() => {
     let mounted = true
-    Promise.all([fetchJobs(), fetchTests()])
-      .catch((err) => console.error("Error fetching initial data", err))
+    Promise.all([fetchJobs(), fetchTests()]).catch((err) => console.error("Error fetching initial data", err))
     return () => {
       mounted = false
     }
@@ -193,26 +219,57 @@ export default function JobsPage() {
     }
     return "Just now"
   }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="container mx-auto p-6">
         <div className="grid grid-cols-12 gap-6">
-          <DashboardSidebar currentPage={'jobs'} user={user} />
+          <DashboardSidebar currentPage={"jobs"} user={user} />
           <div className="col-span-12 md:col-span-9 lg:col-span-10">
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">All Jobs</h1>
                   <p className="text-slate-600 dark:text-slate-400 mt-1">
                     Manage and view all job postings ({pagination.total} total)
                   </p>
                 </div>
-                <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" onClick={() => setDialogOpenNew(true)}>
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Create New Job
-                </Button>
+
+                <div className="flex gap-2">
+                  {/* Export Buttons */}
+                  <Button
+                    onClick={handleExportPDF}
+                    disabled={exportLoading || jobs.length === 0}
+                    className="flex items-center gap-2 bg-transparent"
+                    variant="outline"
+                  >
+                    {exportLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                    Export PDF
+                  </Button>
+                  <Button
+                    onClick={handleExportExcel}
+                    disabled={exportLoading || jobs.length === 0}
+                    className="flex items-center gap-2 bg-transparent"
+                    variant="outline"
+                  >
+                    {exportLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileSpreadsheet className="h-4 w-4" />
+                    )}
+                    Export Excel
+                  </Button>
+
+                  {/* Create Job Button */}
+                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" onClick={() => setDialogOpenNew(true)}>
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Create New Job
+                  </Button>
+                </div>
               </div>
-              <JobAnalytics analyticsData={analyticsData}/>
+
+              <JobAnalytics analyticsData={analyticsData} />
+
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
@@ -252,7 +309,7 @@ export default function JobsPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 text-xs border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
+                                className="h-8 text-xs border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 bg-transparent"
                                 onClick={() => handleJobClick(job)}
                               >
                                 View Details

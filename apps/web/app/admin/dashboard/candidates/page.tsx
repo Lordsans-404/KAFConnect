@@ -4,8 +4,27 @@ import { useState, useEffect, useTransition } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight, Loader2, FileIcon as FileUser, FileX, ChevronDown, Check, Filter, X } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  FileIcon as FileUser,
+  FileX,
+  ChevronDown,
+  Check,
+  Filter,
+  X,
+  FileText,
+  FileSpreadsheet,
+} from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -14,8 +33,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {jwtDecode} from "jwt-decode"
+import { jwtDecode } from "jwt-decode"
 import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
+import { generatePDFReport, generateExcelReport } from "@/components/admin/dashboard/candidates-report-generator"
 
 interface Candidate {
   id: number
@@ -50,12 +70,35 @@ export enum ApplicationStatus {
 
 interface Filters {
   status: ApplicationStatus[]
-  dateRange: 'all' | 'today' | 'week' | 'month' | '3months'
+  dateRange: "all" | "today" | "week" | "month" | "3months"
 }
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+interface DepartmentStat {
+  department: string
+  jobs: string
+  applications: string
+}
+
+interface EmploymentStat {
+  type: string
+  jobs: string
+  applications: string
+}
+
+interface AnalyticsData {
+  departmentStats: DepartmentStat[]
+  employmentStats: EmploymentStat[]
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
-  const [allCandidates, setAllCandidates] = useState<Candidate[]>([]) // Store all candidates for filtering
+  const [allCandidates, setAllCandidates] = useState<Candidate[]>([])
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
+    departmentStats: [],
+    employmentStats: [],
+  })
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -63,11 +106,12 @@ export default function CandidatesPage() {
     totalPages: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [exportLoading, setExportLoading] = useState(false)
   const [user, setUser] = useState<any>({})
   const [token, setToken] = useState<string>("")
   const [filters, setFilters] = useState<Filters>({
     status: [],
-    dateRange: 'all'
+    dateRange: "all",
   })
 
   const fetchCandidates = async (page = 1, limit = 10) => {
@@ -95,7 +139,7 @@ export default function CandidatesPage() {
       }
 
       const data: CandidatesResponse = await response.json()
-      setAllCandidates(data.data) // Store all candidates
+      setAllCandidates(data.data)
       setCandidates(data.data)
       setPagination({
         page: data.page,
@@ -110,53 +154,95 @@ export default function CandidatesPage() {
     }
   }
 
-  // Filter candidates based on current filters
+  const fetchAnalytics = async () => {
+    try {
+      const storedToken = localStorage.getItem("token")
+      if (!storedToken) return
+
+      const response = await fetch(`${API_BASE_URL}/admin/analytics`, {
+        headers: {
+          Authorization: `Bearer ${storedToken}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setAnalyticsData(data)
+      }
+    } catch (error) {
+      console.error("Error fetching analytics:", error)
+    }
+  }
+
   const applyFilters = () => {
     let filtered = [...allCandidates]
 
-    // Filter by status
     if (filters.status.length > 0) {
-      filtered = filtered.filter(candidate => filters.status.includes(candidate.status))
+      filtered = filtered.filter((candidate) => filters.status.includes(candidate.status))
     }
 
-    // Filter by date range
-    if (filters.dateRange !== 'all') {
+    if (filters.dateRange !== "all") {
       const now = new Date()
       const filterDate = new Date()
 
       switch (filters.dateRange) {
-        case 'today':
+        case "today":
           filterDate.setHours(0, 0, 0, 0)
           break
-        case 'week':
+        case "week":
           filterDate.setDate(now.getDate() - 7)
           break
-        case 'month':
+        case "month":
           filterDate.setMonth(now.getMonth() - 1)
           break
-        case '3months':
+        case "3months":
           filterDate.setMonth(now.getMonth() - 3)
           break
       }
 
-      filtered = filtered.filter(candidate => {
+      filtered = filtered.filter((candidate) => {
         const candidateDate = new Date(candidate.applicationDate)
         return candidateDate >= filterDate
       })
     }
 
     setCandidates(filtered)
-    // Update pagination for filtered results
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
       total: filtered.length,
       totalPages: Math.ceil(filtered.length / prev.limit),
-      page: 1
+      page: 1,
     }))
+  }
+
+  const handleExportPDF = async () => {
+    try {
+      setExportLoading(true)
+      await generatePDFReport(candidates, analyticsData, filters)
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      alert("Failed to generate PDF report")
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
+  const handleExportExcel = async () => {
+    try {
+      setExportLoading(true)
+      await generateExcelReport(candidates, analyticsData, filters)
+    } catch (error) {
+      console.error("Error generating Excel:", error)
+      alert("Failed to generate Excel report")
+    } finally {
+      setExportLoading(false)
+    }
   }
 
   useEffect(() => {
     fetchCandidates()
+    fetchAnalytics()
   }, [])
 
   useEffect(() => {
@@ -165,7 +251,7 @@ export default function CandidatesPage() {
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
-      setPagination(prev => ({ ...prev, page: newPage }))
+      setPagination((prev) => ({ ...prev, page: newPage }))
     }
   }
 
@@ -179,20 +265,18 @@ export default function CandidatesPage() {
   }
 
   const handleStatusFilter = (status: ApplicationStatus) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      status: prev.status.includes(status)
-        ? prev.status.filter(s => s !== status)
-        : [...prev.status, status]
+      status: prev.status.includes(status) ? prev.status.filter((s) => s !== status) : [...prev.status, status],
     }))
   }
 
-  const handleDateFilter = (dateRange: Filters['dateRange']) => {
-    setFilters(prev => ({ ...prev, dateRange }))
+  const handleDateFilter = (dateRange: Filters["dateRange"]) => {
+    setFilters((prev) => ({ ...prev, dateRange }))
   }
 
   const clearFilters = () => {
-    setFilters({ status: [], dateRange: 'all' })
+    setFilters({ status: [], dateRange: "all" })
   }
 
   const getStatusDisplayName = (status: ApplicationStatus): string => {
@@ -207,13 +291,13 @@ export default function CandidatesPage() {
     return displayNames[status]
   }
 
-  const getDateRangeDisplayName = (range: Filters['dateRange']): string => {
+  const getDateRangeDisplayName = (range: Filters["dateRange"]): string => {
     const displayNames = {
-      'all': 'All Time',
-      'today': 'Today',
-      'week': 'Last Week',
-      'month': 'Last Month',
-      '3months': 'Last 3 Months'
+      all: "All Time",
+      today: "Today",
+      week: "Last Week",
+      month: "Last Month",
+      "3months": "Last 3 Months",
     }
     return displayNames[range]
   }
@@ -236,37 +320,58 @@ export default function CandidatesPage() {
     return "Just now"
   }
 
-  // Get paginated candidates
   const paginatedCandidates = candidates.slice(
     (pagination.page - 1) * pagination.limit,
-    pagination.page * pagination.limit
+    pagination.page * pagination.limit,
   )
 
-  const hasActiveFilters = filters.status.length > 0 || filters.dateRange !== 'all'
+  const hasActiveFilters = filters.status.length > 0 || filters.dateRange !== "all"
 
-  const currentPage = 'candidates'
+  const currentPage = "candidates"
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="container mx-auto p-6">
         <div className="grid grid-cols-12 gap-6">
           <DashboardSidebar currentPage={currentPage} user={user} />
           <div className="col-span-12 md:col-span-9 lg:col-span-10">
-
             <div className="space-y-6">
-              <div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">All Candidates</h1>
-                <p className="text-slate-600 dark:text-slate-400 mt-1">
-                  Manage and view all candidate applications ({candidates.length} of {allCandidates.length} total)
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">All Candidates</h1>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1">
+                    Manage and view all candidate applications ({candidates.length} of {allCandidates.length} total)
+                  </p>
+                </div>
+
+                {/* Export Buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleExportExcel}
+                    disabled={exportLoading || candidates.length === 0}
+                    className="flex items-center gap-2 bg-transparent"
+                    variant="outline"
+                  >
+                    {exportLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileSpreadsheet className="h-4 w-4" />
+                    )}
+                    Export Excel
+                  </Button>
+                </div>
               </div>
 
               {/* Active Filters Display */}
               {hasActiveFilters && (
                 <div className="flex flex-wrap items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Active filters:</span>
-                  
-                  {filters.status.map(status => (
-                    <Badge key={status} variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+
+                  {filters.status.map((status) => (
+                    <Badge
+                      key={status}
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                    >
                       Status: {getStatusDisplayName(status)}
                       <button
                         onClick={() => handleStatusFilter(status)}
@@ -276,19 +381,22 @@ export default function CandidatesPage() {
                       </button>
                     </Badge>
                   ))}
-                  
-                  {filters.dateRange !== 'all' && (
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+
+                  {filters.dateRange !== "all" && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                    >
                       Date: {getDateRangeDisplayName(filters.dateRange)}
                       <button
-                        onClick={() => handleDateFilter('all')}
+                        onClick={() => handleDateFilter("all")}
                         className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
                       >
                         <X className="h-3 w-3" />
                       </button>
                     </Badge>
                   )}
-                  
+
                   <Button
                     variant="ghost"
                     size="sm"
@@ -321,12 +429,20 @@ export default function CandidatesPage() {
                             Status
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700">
-                                  <Filter className={`h-3 w-3 ${filters.status.length > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                >
+                                  <Filter
+                                    className={`h-3 w-3 ${filters.status.length > 0 ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
+                                  />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start" className="w-48">
-                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">Filter by Status:</div>
+                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                                  Filter by Status:
+                                </div>
                                 <DropdownMenuSeparator />
                                 {Object.values(ApplicationStatus).map((status) => (
                                   <DropdownMenuCheckboxItem
@@ -344,18 +460,26 @@ export default function CandidatesPage() {
                             Applied
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700">
-                                  <Filter className={`h-3 w-3 ${filters.dateRange !== 'all' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                >
+                                  <Filter
+                                    className={`h-3 w-3 ${filters.dateRange !== "all" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
+                                  />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start" className="w-40">
-                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">Filter by Date:</div>
+                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                                  Filter by Date:
+                                </div>
                                 <DropdownMenuSeparator />
-                                {(['all', 'today', 'week', 'month', '3months'] as const).map((range) => (
+                                {(["all", "today", "week", "month", "3months"] as const).map((range) => (
                                   <DropdownMenuItem
                                     key={range}
                                     onClick={() => handleDateFilter(range)}
-                                    className={filters.dateRange === range ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                                    className={filters.dateRange === range ? "bg-blue-50 dark:bg-blue-900/20" : ""}
                                   >
                                     <div className="flex items-center gap-2">
                                       {filters.dateRange === range && <Check className="h-3 w-3 text-blue-600" />}
@@ -389,9 +513,16 @@ export default function CandidatesPage() {
                           ))}
                           {paginatedCandidates.length === 0 && (
                             <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-                              <p>{hasActiveFilters ? 'No candidates match the current filters' : 'No candidates found'}</p>
+                              <p>
+                                {hasActiveFilters ? "No candidates match the current filters" : "No candidates found"}
+                              </p>
                               {hasActiveFilters && (
-                                <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={clearFilters}
+                                  className="mt-2 bg-transparent"
+                                >
                                   Clear filters
                                 </Button>
                               )}
@@ -482,21 +613,32 @@ interface CandidateRowProps {
   date: string
   resumePath?: string | null
   onStatusUpdated?: (candidateId: number, newStatus: ApplicationStatus) => void
-  score:any
-  totalQuestions:any
+  score: any
+  totalQuestions: any
 }
 
-function CandidateRow({ id, name, email, position, status, date, resumePath, onStatusUpdated, totalQuestions, score }: CandidateRowProps) {
+function CandidateRow({
+  id,
+  name,
+  email,
+  position,
+  status,
+  date,
+  resumePath,
+  onStatusUpdated,
+  totalQuestions,
+  score,
+}: CandidateRowProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [currentStatus, setCurrentStatus] = useState(status)
-  const scorePercentage = !isNaN(score) && !isNaN(totalQuestions.length) && totalQuestions.length > 0
-  ? `${Math.round((score / totalQuestions.length) * 100)}`
-  : '-'
+  const scorePercentage =
+    !isNaN(score) && !isNaN(totalQuestions.length) && totalQuestions.length > 0
+      ? `${Math.round((score / totalQuestions.length) * 100)}`
+      : "-"
   const hasResume = Boolean(resumePath)
   const resumeUrl = `${API_BASE_URL}/` + resumePath
 
-  // Define the status progression flow
   const getNextStatuses = (currentStatus: ApplicationStatus): ApplicationStatus[] => {
     const statusFlow = {
       [ApplicationStatus.SUBMITTED]: [ApplicationStatus.UNDER_REVIEW, ApplicationStatus.REJECTED],
@@ -507,14 +649,13 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
       ],
       [ApplicationStatus.WRITTEN_TEST]: [ApplicationStatus.INTERVIEW, ApplicationStatus.REJECTED],
       [ApplicationStatus.INTERVIEW]: [ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED],
-      [ApplicationStatus.ACCEPTED]: [], // Final status
-      [ApplicationStatus.REJECTED]: [], // Final status
+      [ApplicationStatus.ACCEPTED]: [],
+      [ApplicationStatus.REJECTED]: [],
     }
 
     return statusFlow[currentStatus] || []
   }
 
-  // Get display name for status
   const getStatusDisplayName = (status: ApplicationStatus): string => {
     const displayNames = {
       [ApplicationStatus.SUBMITTED]: "Submitted",
@@ -527,7 +668,6 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
     return displayNames[status]
   }
 
-  // Handle status change with Server Action
   const handleStatusChange = async (newStatus: ApplicationStatus) => {
     startTransition(async () => {
       try {
@@ -546,7 +686,6 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
     })
   }
 
-  // Determine badge color based on candidate status
   const getStatusBadge = () => {
     const statusElement = (
       <div className="flex items-center gap-1">
@@ -647,7 +786,9 @@ function CandidateRow({ id, name, email, position, status, date, resumePath, onS
         )}
       </div>
       <div className="col-span-2 flex items-center text-slate-500 dark:text-slate-400">{date}</div>
-      <div className="col-span-1 flex items-center text-right text-slate-500 dark:text-slate-400">{scorePercentage !== null ? `${scorePercentage}` : '-'}</div>
+      <div className="col-span-1 flex items-center text-right text-slate-500 dark:text-slate-400">
+        {scorePercentage !== null ? `${scorePercentage}` : "-"}
+      </div>
       <div className="col-span-1 flex items-center justify-center">
         {hasResume ? (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

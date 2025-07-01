@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState } from "react" 
 import Link from "next/link"
-import { Briefcase, Calendar, Command, MessageSquare, Settings, Users } from "lucide-react"
+import { Briefcase, Calendar, Command, MessageSquare, Settings, Users, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { StatusItem } from "@/components/admin/dashboard/status-item"
@@ -25,6 +25,7 @@ const navigationItems: NavItemData[] = [
   { icon: Users, label: "Candidates", href: "/admin/dashboard/candidates", key: "candidates" },
   { icon: Briefcase, label: "Jobs", href: "/admin/dashboard/jobs", key: "jobs" },
   { icon: Users, label: "Users", href: "/admin/dashboard/users", key: "users" },
+  { icon: FileText, label: "Materials", href: "/admin/dashboard/materials", key: "materials" },
 ]
 
 function capitalizeFirstLetter(text: string | null | undefined): string {
