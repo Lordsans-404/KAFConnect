@@ -33,24 +33,27 @@ export class EvaluationService {
 
 	// Membuat Test untuk kandidat
 	async createTest(dto: CreateTestDto): Promise<Test> {
-		try {
-			const test = this.testRepository.create({
-				title: dto.title,
-				createdBy: this.usersRepository.create({ id: dto.createdBy }),
-				questions: dto.questions.map(q => ({
-					text: q.text,
-					choices: q.choices.map(c => ({
-						text: c.text,
-						isCorrect: c.isCorrect,
-					})),
-				})),
-			});
-			return await this.testRepository.save(test);
-		} catch (error) {
-			console.error('Error creating test:', error);
-			throw error;
-		}
+	try {
+		
+
+		const test = this.testRepository.create({
+		title: dto.title,
+		questions: dto.questions.map(q => ({
+			text: q.text,
+			choices: q.choices.map(c => ({
+			text: c.text,
+			isCorrect: c.isCorrect,
+			})),
+		})),
+		});
+
+		return await this.testRepository.save(test);
+	} catch (error) {
+		console.error('Error creating test:', error);
+		throw error;
 	}
+	}
+
 
 	async getAllTests(){
 		return this.testRepository.find({relations:["questions", "questions.choices"]}) || undefined;
