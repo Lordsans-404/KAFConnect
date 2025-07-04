@@ -1,0 +1,4 @@
+# .nextignore
+../../apps/api
+../../packages/eslint-config
+../../packages/typescript-config

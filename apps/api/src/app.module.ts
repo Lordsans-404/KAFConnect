@@ -19,8 +19,8 @@ import { AdminModule } from './admin/admin.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'kelvin9801',
-      database: 'db_ecommerce',
+      password: '',
+      database: 'project1',
       entities: [__dirname + '/**/*.entity{.ts,.js}'], // Auto-load entities
       synchronize: true, // Automatically sync database schema (for development only)
     }),
