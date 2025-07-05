@@ -62,6 +62,7 @@ export default function JobsPage() {
   const [dialogOpenDetail, setDialogOpenDetail] = useState(false)
   const [dialogOpenNew, setDialogOpenNew] = useState(false)
   const [allTests, setAllTests] = useState([])
+  const [allMaterials, setAllMaterials] = useState([])
   const [token, setToken] = useState<string>("")
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     departmentStats: [],
@@ -94,17 +95,20 @@ export default function JobsPage() {
           return
         }
         const data: JobsResponse = await response.json()
-        setJobs(data.data)
+        setJobs(data.jobs.data)
         setPagination({
-          page: data.page,
-          limit: data.limit,
-          total: data.total,
-          totalPages: data.totalPages,
+          page: data.jobs.page,
+          limit: data.jobs.limit,
+          total: data.jobs.total,
+          totalPages: data.jobs.totalPages,
         })
         setAnalyticsData({
-          departmentStats: data.departmentStats || [],
-          employmentStats: data.employmentStats || [],
+          departmentStats: data.jobs.departmentStats || [],
+          employmentStats: data.jobs.employmentStats || [],
         })
+        setAllMaterials(data.materials.data)
+        console.log(data.materials)
+        setAllTests(data.all_tests)
       } catch (error) {
         console.error("Error fetching jobs:", error)
       } finally {
@@ -113,23 +117,6 @@ export default function JobsPage() {
     },
     [API_BASE_URL],
   )
-
-  const fetchTests = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/tests`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-      if (response.ok) {
-        const tests = await response.json()
-        setAllTests(tests)
-      }
-    } catch (error) {
-      console.error("Error fetching tests:", error)
-    }
-  }, [API_BASE_URL, token])
 
   const handleExportPDF = async () => {
     try {
@@ -159,11 +146,11 @@ export default function JobsPage() {
 
   useEffect(() => {
     let mounted = true
-    Promise.all([fetchJobs(), fetchTests()]).catch((err) => console.error("Error fetching initial data", err))
+    Promise.all([fetchJobs()]).catch((err) => console.error("Error fetching initial data", err))
     return () => {
       mounted = false
     }
-  }, [fetchJobs, fetchTests])
+  }, [fetchJobs])
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -403,6 +390,7 @@ export default function JobsPage() {
                   setOpen={setDialogOpenDetail}
                   job={selectedJob}
                   tests={allTests}
+                  materials={allMaterials}
                   token={token}
                   onSave={handleSave}
                 />

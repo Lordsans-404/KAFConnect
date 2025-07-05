@@ -480,20 +480,46 @@ function ApplicationItem({ appliedJob }: { appliedJob: any }) {
         </div>
       </div>
 
-      {/* Only show Start Test button when status is written_test */}
+      {/* Only show Start Test button when status is written_test and have a test*/}
       {appliedJob.status === "written_test" && test && (
         <div className="flex justify-end mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
-          >
-            <a href={`dashboard/test/${test}?jobApplication=${appliedJob.id}`}>
-              Start Test
-              <ChevronRight className="h-3 w-3 ml-1" />
-            </a>
-          </Button>
+          {appliedJob.submission ? (
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
+            >
+              <a href={`dashboard/test/${test}?jobApplication=${appliedJob.id}`}>
+                See Results
+                <ChevronRight className="h-3 w-3 ml-1" />
+              </a>
+            </Button>
+          ) : (
+            <Button
+              asChild={!appliedJob.isTestExpired} // Disable "asChild" when button is disabled
+              variant="outline"
+              size="sm"
+              disabled={appliedJob.isTestExpired}
+              className={
+                appliedJob.isTestExpired
+                  ? "opacity-50 cursor-not-allowed bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800"
+                  : "bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
+              }
+            >
+              {appliedJob.isTestExpired ? (
+                <span>
+                  Test Expired
+                </span>
+              ) : (
+                <a href={`dashboard/test/${test}?jobApplication=${appliedJob.id}`}>
+                  Start Test
+                  <ChevronRight className="h-3 w-3 ml-1" />
+                </a>
+              )}
+            </Button>
+          )}
+
         </div>
       )}
     </div>

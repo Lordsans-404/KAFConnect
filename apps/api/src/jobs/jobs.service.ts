@@ -44,7 +44,7 @@ export class JobsService {
 
   }
 
-  async getAllMaterials(page = 1, limit = 1){
+  async getAllMaterials(page = 1, limit = 10){
     const take = limit;
     const skip = (page - 1) * take;
 
@@ -108,7 +108,7 @@ export class JobsService {
   async getAllJobs() {
     // Old version: no pagination
     const job = await this.jobRepository.find({
-      relations: ['applications'],
+      relations: ['applications','testId','material'],
       take: 5, // default limit
     });
     return this.checkExpMultipleJob(job)
@@ -141,7 +141,7 @@ export class JobsService {
     const skip = (page - 1) * take;
 
     const [jobs, total] = await this.jobRepository.findAndCount({
-      relations: ['applications','testId'],
+      relations: ['applications','testId','material'],
       skip,
       take,
     });
@@ -217,13 +217,14 @@ export class JobsService {
     const [appliedJobs, total] = await this.jobApplicationRepository
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.job', 'job')
+      .leftJoinAndSelect('application.submission', 'submission')
       .leftJoinAndSelect('job.testId', 'testId')
       .where('application.userApplicant.id = :userId', { userId })
       .skip(skip)
       .take(take)
       .getManyAndCount();
     return {
-      data : appliedJobs,
+      data : await this.checkExpMultipleTest(appliedJobs),
       total,
       page,
       limit,
@@ -275,6 +276,33 @@ export class JobsService {
     return { message: 'Lamaran berhasil dikirim.' };
   }
 
+  // Check expired test
+  async checkExpTest(application:JobApplication){
+    if(application.testExpiredAt && application.testExpiredAt < new Date() && !application.isTestExpired){
+      application.isTestExpired = true;
+    }
+    return application
+  }
+
+  // Check apakah semua application apakah test nya sudah expired
+  async checkExpMultipleTest(applications:JobApplication[]){
+    const expiredTest = applications.filter(
+      application => application.status == "written_test" && !application.isTestExpired && application.testExpiredAt < new Date()
+    );
+
+    // Jika ditemukan epxiredtest diatas 0
+    if (expiredTest.length > 0){
+      await this.jobApplicationRepository.save(
+        expiredTest.map(application => ({...application, isTestExpired:true}))
+      );
+    }
+    return applications.map(application => {
+      if(application.testExpiredAt && application.testExpiredAt < new Date()){
+        application.isTestExpired = true;
+      }
+      return application
+    })
+  }
 
   async updateApplication(id: number, dto: UpdateJobApplicationDto): Promise<JobApplication> {
     const application = await this.jobApplicationRepository.findOne({

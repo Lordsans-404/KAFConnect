@@ -1,12 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Job } from '../jobs/jobs.entity';
+
+// Services
+import { JobsService } from '../jobs/jobs.service';
+import { EvaluationService } from '../evaluation/evaluation.service';
+
 
 @Injectable()
 export class AdminService {
   constructor(
-    @InjectRepository(Job)
-    private readonly jobRepository: Repository<Job>,
+    private readonly jobsService: JobsService,
+    private readonly evaluationService: EvaluationService,
   ) {}
+  async adminPageJobs(page = 1, limit = 10){
+    const jobs = await this.jobsService.getPaginatedJobs(page, limit);
+    const all_tests = await this.evaluationService.getAllTests() // get all tests and add one to the job
+    const materials = await this.jobsService.getAllMaterials(page=1,limit=100) // get all meterials and add to one job
+    return {jobs,all_tests,materials}
+  }
 }

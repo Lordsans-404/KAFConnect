@@ -44,6 +44,9 @@ export class CreateJobDto {
   testId?:any;
 
   @IsOptional()
+  material?:any
+
+  @IsOptional()
   isActive?: boolean;
 }
 

@@ -1,19 +1,54 @@
-import { Controller, Post, Req, Get, Body, Put, Logger, Query, Param, ParseIntPipe, UseGuards, UploadedFile, SetMetadata, ForbiddenException, UseInterceptors } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { CreateJobDto, UpdateJobDto } from '../jobs/dto/job.dto';
-import { UpdateJobApplicationDto, CreateJobApplicationDto } from '../jobs/dto/createApplicationJob.dto';
-import { CreateMaterialDto } from '../jobs/dto/material.dto';
+// NestJS core
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Logger,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+  SetMetadata,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+
+// Guards
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
-import { Job } from '../jobs/jobs.entity';
+
+// Services
+import { AdminService } from './admin.service';
 import { UsersService } from '../users/users.service';
 import { JobsService } from '../jobs/jobs.service';
 import { EvaluationService } from '../evaluation/evaluation.service';
-import { CreateTestDto, CreateChoiceDto, CreateQuestionDto } from '../evaluation/dto/create-test.dto' 
-import { FileInterceptor } from '@nestjs/platform-express'
+
+// DTOs
+import { CreateJobDto, UpdateJobDto } from '../jobs/dto/job.dto';
+import {
+  CreateJobApplicationDto,
+  UpdateJobApplicationDto,
+} from '../jobs/dto/createApplicationJob.dto';
+import { CreateMaterialDto } from '../jobs/dto/material.dto';
+import {
+  CreateTestDto,
+  CreateChoiceDto,
+  CreateQuestionDto,
+} from '../evaluation/dto/create-test.dto';
+
+// Entities
+import { Job } from '../jobs/jobs.entity';
+
+// Utils
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import * as crypto from 'crypto';
+
 
 @Controller('admin')
 export class AdminController {
@@ -46,18 +81,8 @@ export class AdminController {
   ) {
     const pageNumber = parseInt(page || '1', 10);
     const limitNumber = parseInt(limit || '10', 10);
-
-    return this.jobsService.getPaginatedJobs(pageNumber, limitNumber);
+    return this.adminService.adminPageJobs(pageNumber,limitNumber)
   }
-
-  @Get('tests')
-  @UseGuards(JwtAuthGuard,RolesGuard)
-  @SetMetadata('roles', ['super_admin', 'admin', 'staff'])
-  async getTests(@Req() req){
-    const all_tests = await this.evaluationService.getAllTests()
-    return all_tests
-  }
-
 
   @Get('candidates') 
   @UseGuards(JwtAuthGuard,RolesGuard)
