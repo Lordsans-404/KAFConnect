@@ -20,6 +20,7 @@ import {
   Upload,
   Phone,
   Warehouse,
+  ChevronLeft,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -32,17 +33,73 @@ import Link from "next/link"
 import { ApplicationDialog } from "@/components/applicant-form"
 
 // get API url
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
+interface PaginationData {
+  data: any[]
+  total: number
+  page: number
+  totalPages: number
+}
+
+
+function getTimeRemaining(expiredAt: string | Date): {
+  timeLeft: string
+  isExpired: boolean
+  isUrgent: boolean
+} {
+  const now = new Date().getTime()
+  const expiry = new Date(expiredAt).getTime()
+  const difference = expiry - now
+
+  if (difference <= 0) {
+    return { timeLeft: "Expired", isExpired: true, isUrgent: false }
+  }
+
+  const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+
+  let timeLeft = ""
+  let isUrgent = false
+
+  if (days > 0) {
+    timeLeft = `${days}d ${hours}h left`
+  } else if (hours > 0) {
+    timeLeft = `${hours}h ${minutes}m left`
+    isUrgent = hours < 24 // Less than 24 hours is urgent
+  } else {
+    timeLeft = `${minutes}m left`
+    isUrgent = true // Less than 1 hour is urgent
+  }
+
+  return { timeLeft, isExpired: false, isUrgent }
+}
 export default function UserDashboard() {
   const { theme, setTheme } = useTheme()
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isLoading, setIsLoading] = useState(true)
-  const [data, setData] = useState<any>(null)
+  const [profileData, setProfileData] = useState<any>(null)
   const [user, setUser] = useState<User | null>(null)
   const [message, setMessage] = useState("")
   const [token, setToken] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+
+  // Pagination states
+  const [applicationsData, setApplicationsData] = useState<PaginationData>({
+    data: [],
+    total: 0,
+    page: 1,
+    totalPages: 1,
+  })
+  const [jobsData, setJobsData] = useState<PaginationData>({
+    data: [],
+    total: 0,
+    page: 1,
+    totalPages: 1,
+  })
+  const [applicationsLoading, setApplicationsLoading] = useState(false)
+  const [jobsLoading, setJobsLoading] = useState(false)
 
   // Ensure component is mounted before accessing theme
   useEffect(() => {
@@ -50,7 +107,7 @@ export default function UserDashboard() {
   }, [])
 
   useEffect(() => {
-    async function loadDashboard() {
+    async function loadProfile() {
       const token = localStorage.getItem("token")
       setToken(token)
       if (!token) {
@@ -60,7 +117,7 @@ export default function UserDashboard() {
       }
 
       try {
-        const res = await fetch(`${API_BASE_URL}/users/dashboard`, {
+        const res = await fetch(`${API_BASE_URL}/users/profile`, {
           headers: { Authorization: "Bearer " + token },
         })
 
@@ -69,16 +126,11 @@ export default function UserDashboard() {
           window.location.href = "/"
           return
         }
-        try {
-          const data = await res.json()
-          setData(data)
-          setUser(data.profile.user || null)
-          setIsLoading(false)
-        } catch (err) {
-          alert("Sorry we couldn't find your data")
-          window.location.href = "/profile"
-          return
-        }
+
+        const data = await res.json()
+        setProfileData(data)
+        setUser(data.user || null)
+        setIsLoading(false)
       } catch (err) {
         console.error("Failed to fetch profile", err)
         setMessage(err.message)
@@ -87,8 +139,58 @@ export default function UserDashboard() {
       }
     }
 
-    loadDashboard()
+    loadProfile()
   }, [])
+
+  // Load applications with pagination
+  const loadApplications = async (page = 1) => {
+    if (!token) return
+
+    setApplicationsLoading(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/applied-jobs?page=${page}`, {
+        headers: { Authorization: "Bearer " + token },
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setApplicationsData(data)
+      }
+    } catch (err) {
+      console.error("Failed to fetch applications", err)
+    } finally {
+      setApplicationsLoading(false)
+    }
+  }
+
+  // Load jobs with pagination
+  const loadJobs = async (page = 1) => {
+    if (!token) return
+
+    setJobsLoading(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/jobs?page=${page}`, {
+        headers: { Authorization: "Bearer " + token },
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setJobsData(data)
+      }
+    } catch (err) {
+      console.error("Failed to fetch jobs", err)
+    } finally {
+      setJobsLoading(false)
+    }
+  }
+
+  // Load initial data when token is available
+  useEffect(() => {
+    if (token) {
+      loadApplications(1)
+      loadJobs(1)
+    }
+  }, [token])
 
   // Update time
   useEffect(() => {
@@ -116,9 +218,18 @@ export default function UserDashboard() {
   const userData = {
     name: user?.name || "Guest",
     email: user?.email || "not provided",
-    location: data?.profile.address || "not provided",
-    phone: data?.profile.phoneNumber || "not provided",
+    location: profileData?.address || "not provided",
+    phone: profileData?.phoneNumber || "not provided",
     isVerified: user?.isVerified,
+  }
+
+  // Pagination handlers
+  const handleApplicationsPageChange = (page: number) => {
+    loadApplications(page)
+  }
+
+  const handleJobsPageChange = (page: number) => {
+    loadJobs(page)
   }
 
   // Prevent hydration mismatch
@@ -253,7 +364,7 @@ export default function UserDashboard() {
                   <Link href="/profile" className="w-full">
                     <Button
                       variant="outline"
-                      className="w-full border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                      className="w-full border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-transparent"
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       View Public Profile
@@ -325,7 +436,7 @@ export default function UserDashboard() {
                       </div>
                     </div>
                     <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
-                      <div className="text-2xl font-bold">{data?.dataApplicants?.data.length || 0}</div>
+                      <div className="text-2xl font-bold">{applicationsData.total || 0}</div>
                       <div className="text-xs">Active Applications</div>
                     </div>
                   </div>
@@ -353,27 +464,64 @@ export default function UserDashboard() {
                 <TabsContent value="applications" className="mt-0">
                   <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-slate-900 dark:text-slate-100 text-base">
-                        Your Job Applications
-                      </CardTitle>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-slate-900 dark:text-slate-100 text-base">
+                          Your Job Applications
+                        </CardTitle>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">
+                          {applicationsData.total} total applications
+                        </div>
+                      </div>
                     </CardHeader>
                     <CardContent className="p-0">
-                      <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {data?.dataApplicants?.data.map((appJob, index) => (
-                          <ApplicationItem key={index} appliedJob={appJob} />
-                        )) || (
-                          <div className="p-8 text-center text-slate-500 dark:text-slate-400">No applications yet</div>
-                        )}
-                      </div>
+                      {applicationsLoading ? (
+                        <div className="p-8 text-center">
+                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
+                          <div className="mt-2 text-slate-500 dark:text-slate-400">Loading applications...</div>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                          {applicationsData.data.length > 0 ? (
+                            applicationsData.data.map((appJob, index) => (
+                              <ApplicationItem key={index} appliedJob={appJob} />
+                            ))
+                          ) : (
+                            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                              No applications yet
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </CardContent>
-                    <CardFooter className="flex justify-center p-4">
-                      <Button
-                        variant="outline"
-                        className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-                      >
-                        View All Applications
-                      </Button>
-                    </CardFooter>
+                    {applicationsData.totalPages > 1 && (
+                      <CardFooter className="flex justify-between items-center p-4 border-t border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApplicationsPageChange(applicationsData.page - 1)}
+                            disabled={applicationsData.page <= 1 || applicationsLoading}
+                            className="border-slate-200 dark:border-slate-700"
+                          >
+                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            Previous
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApplicationsPageChange(applicationsData.page + 1)}
+                            disabled={applicationsData.page >= applicationsData.totalPages || applicationsLoading}
+                            className="border-slate-200 dark:border-slate-700"
+                          >
+                            Next
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">
+                          Page {applicationsData.page} of {applicationsData.totalPages}
+                        </div>
+                      </CardFooter>
+                    )}
                   </Card>
                 </TabsContent>
 
@@ -381,31 +529,35 @@ export default function UserDashboard() {
                 <TabsContent value="recommended" className="mt-0">
                   <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-slate-900 dark:text-slate-100 text-base">
-                        Jobs Recommended For You
-                      </CardTitle>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-slate-900 dark:text-slate-100 text-base">
+                          Jobs Recommended For You
+                        </CardTitle>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">
+                          {jobsData.data.length} available jobs
+                        </div>
+                      </div>
                     </CardHeader>
                     <CardContent className="p-0">
-                      <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {data?.dataJobs.jobs
-                          ?.slice(0, 3)
-                          .map((job, index) => <JobItem key={index} token={token} job={job} match={95} />) || (
-                          <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-                            No recommended jobs available
-                          </div>
-                        )}
-                      </div>
+                      {jobsLoading ? (
+                        <div className="p-8 text-center">
+                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
+                          <div className="mt-2 text-slate-500 dark:text-slate-400">Loading jobs...</div>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                          {jobsData.data.length > 0 ? (
+                            jobsData.data.map((job, index) => (
+                              <JobItem key={index} token={token} job={job} match={95} />
+                            ))
+                          ) : (
+                            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                              No recommended jobs available
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </CardContent>
-                    <CardFooter className="flex justify-center p-4">
-                      <Link href="/job-list">
-                        <Button
-                          variant="outline"
-                          className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-                        >
-                          View More Jobs
-                        </Button>
-                      </Link>
-                    </CardFooter>
                   </Card>
                 </TabsContent>
               </Tabs>
@@ -419,9 +571,29 @@ export default function UserDashboard() {
 
 // Application item component
 function ApplicationItem({ appliedJob }: { appliedJob: any }) {
+  const [timeRemaining, setTimeRemaining] = useState<{
+    timeLeft: string
+    isExpired: boolean
+    isUrgent: boolean
+  } | null>(null)
+
   const logo = "/placeholder.svg?height=40&width=40"
   const posted = timeAgo(new Date(appliedJob.applicationDate))
   const test = appliedJob.job.testId?.id
+
+  // Update countdown every minute for written_test status
+  useEffect(() => {
+    if (appliedJob.status === "written_test" && appliedJob.testExpiredAt) {
+      const updateTimer = () => {
+        setTimeRemaining(getTimeRemaining(appliedJob.testExpiredAt))
+      }
+
+      updateTimer() // Initial update
+      const interval = setInterval(updateTimer, 60000) // Update every minute
+
+      return () => clearInterval(interval)
+    }
+  }, [appliedJob.status, appliedJob.testExpiredAt])
 
   const getStatusColor = () => {
     switch (appliedJob.status) {
@@ -429,11 +601,11 @@ function ApplicationItem({ appliedJob }: { appliedJob: any }) {
         return "bg-cyan-100 hover:bg-cyan-200 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100"
       case "written_test":
         return "bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-      case "purple":
+      case "under_review":
+        return "bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+      case "interview":
         return "bg-purple-100 hover:bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-100"
-      case "amber":
-        return "bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-100"
-      case "green":
+      case "accepted":
         return "bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-100"
       case "rejected":
         return "bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-100"
@@ -477,6 +649,26 @@ function ApplicationItem({ appliedJob }: { appliedJob: any }) {
               </div>
             </div>
           </div>
+
+          {/* Show test countdown for written_test status */}
+          {appliedJob.status === "written_test" && timeRemaining && (
+            <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Test Deadline:</div>
+                <div
+                  className={`text-xs font-medium ${
+                    timeRemaining.isExpired
+                      ? "text-red-600 dark:text-red-400"
+                      : timeRemaining.isUrgent
+                        ? "text-orange-600 dark:text-orange-400"
+                        : "text-green-600 dark:text-green-400"
+                  }`}
+                >
+                  {timeRemaining.timeLeft}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -497,7 +689,7 @@ function ApplicationItem({ appliedJob }: { appliedJob: any }) {
             </Button>
           ) : (
             <Button
-              asChild={!appliedJob.isTestExpired} // Disable "asChild" when button is disabled
+              asChild={!appliedJob.isTestExpired}
               variant="outline"
               size="sm"
               disabled={appliedJob.isTestExpired}
@@ -508,9 +700,7 @@ function ApplicationItem({ appliedJob }: { appliedJob: any }) {
               }
             >
               {appliedJob.isTestExpired ? (
-                <span>
-                  Test Expired
-                </span>
+                <span>Test Expired</span>
               ) : (
                 <a href={`dashboard/test/${test}?jobApplication=${appliedJob.id}`}>
                   Start Test
@@ -519,13 +709,11 @@ function ApplicationItem({ appliedJob }: { appliedJob: any }) {
               )}
             </Button>
           )}
-
         </div>
       )}
     </div>
   )
 }
-
 
 // Job item component
 function JobItem({ token, job, match }: { token: string | null; job: any; match: number }) {

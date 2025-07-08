@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { EmailService } from '../email/email.service';
 import { JobsService } from '../jobs/jobs.service';
 import * as crypto from 'crypto';
+import { EvaluationService } from '../evaluation/evaluation.service';
 
 @Injectable()
 export class UsersService {
@@ -25,6 +26,7 @@ export class UsersService {
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
     private readonly jobsService: JobsService,
+    private readonly evaluationService : EvaluationService,
   ) {}
 
   // ==============================================
@@ -154,6 +156,16 @@ export class UsersService {
   return await this.userProfileRepository.save(profile);
   }
 
+  async singleTestPage(applicationId,testId,req){
+    const submission = await this.evaluationService.isSubmitted(req.user.id,testId)
+    if(!submission){
+      console.log("No Submission -Uhuy")
+    }
+    const application = this.jobsService.checkExpTest(applicationId)
+    const test = await this.evaluationService.getTestById(testId)
+    return {test, user:req.user,submission};
+
+  }
   // ========================================
   // INTERNAL SERVICE
   // ========================================

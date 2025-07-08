@@ -215,7 +215,7 @@ export default function UserTestForm() {
       }
 
       try {
-        const res = await fetch(`${API_BASE_URL}/users/test/${testId}`, {
+        const res = await fetch(`${API_BASE_URL}/users/test/${testId}?applicationId=${jobApplicationId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

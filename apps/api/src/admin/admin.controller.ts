@@ -77,10 +77,9 @@ export class AdminController {
   @SetMetadata('roles', ['super_admin', 'admin', 'staff'])
   async getPaginatedJobs(
     @Query('page') page?: string,
-    @Query('limit') limit?: string,
   ) {
     const pageNumber = parseInt(page || '1', 10);
-    const limitNumber = parseInt(limit || '10', 10);
+    const limitNumber = 8;
     return this.adminService.adminPageJobs(pageNumber,limitNumber)
   }
 

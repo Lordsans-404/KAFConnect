@@ -199,6 +199,7 @@ export class JobsService {
       .take(take)
       .leftJoinAndSelect('job.testId', 'test') // Include relasi jika dibutuhkan
       .leftJoinAndSelect('job.applications', 'applications') // Optional
+      .orderBy('job.postedAt','DESC')
       .getManyAndCount();
 
     return {
@@ -222,6 +223,7 @@ export class JobsService {
       .where('application.userApplicant.id = :userId', { userId })
       .skip(skip)
       .take(take)
+      .orderBy('application.applicationDate', 'DESC')
       .getManyAndCount();
     return {
       data : await this.checkExpMultipleTest(appliedJobs),
@@ -277,12 +279,22 @@ export class JobsService {
   }
 
   // Check expired test
-  async checkExpTest(application:JobApplication){
-    if(application.testExpiredAt && application.testExpiredAt < new Date() && !application.isTestExpired){
+  async checkExpTest(applicationId: number) {
+    const application = await this.jobApplicationRepository.findOneOrFail({
+      where: { id: applicationId },
+    });
+
+    if (
+      application.testExpiredAt &&
+      application.testExpiredAt < new Date() &&
+      !application.isTestExpired
+    ) {
       application.isTestExpired = true;
     }
-    return application
+
+    return application;
   }
+
 
   // Check apakah semua application apakah test nya sudah expired
   async checkExpMultipleTest(applications:JobApplication[]){

@@ -77,15 +77,35 @@ export class UsersController {
     return this.usersService.dashboardService(req.user)
   }
 
+  @Get('applied-jobs')
+  @UseGuards(JwtAuthGuard)
+  async getPaginatedAppliedJobs(
+    @Req() req,
+    @Query('page') page?: string,
+    ){
+    const pageNumber = parseInt(page || '1');
+    console.log("Uhuyy")
+    return this.jobsService.getAppliedJobs(req.user.id,pageNumber)
+  }
+
+  @Get('jobs')
+  @UseGuards(JwtAuthGuard)
+  async getPaginatedJobs(
+    @Req() req,
+    @Query('page') page?: string,
+    ){
+    const pageNumber = parseInt(page || '1');
+    return this.jobsService.getUnappliedJobs(pageNumber)
+  }
+
   @Get('test/:id')
   @UseGuards(JwtAuthGuard)
   async getSingleTest(
     @Param("id", ParseIntPipe)id : number,
-    @Req() req
+    @Req() req,
+    @Query('applicationId') applicationId: number,
     ){
-    const test = await this.evaluationService.getTestById(id)
-    const submission = await this.evaluationService.isSubmitted(req.user.id,id)
-    return {test, user:req.user,submission};
+    return this.usersService.singleTestPage(applicationId,id,req)
   }
 
 
