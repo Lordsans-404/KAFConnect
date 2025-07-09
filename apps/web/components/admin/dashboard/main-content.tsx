@@ -59,16 +59,17 @@ export function MainContent({ data, currentTime, formatDate, token, user }: Main
                   icon={FileText}
                   trend="up"
                   color="cyan"
+                  detail={newCandidates?.length + " Candidates This Week"}
                 />
                 <MetricCard
                   title="Interviews"
-                  value={1}
+                  value={data.interviews?.length}
                   icon={Calendar}
                   trend="stable"
                   color="green"
-                  detail="8 scheduled today"
+                  detail={data.interviews?.length + " Has been interviewed"}
                 />
-                <MetricCard title="Hires" value={0} icon={CheckCircle} trend="up" color="blue" detail="3 this week" />
+                <MetricCard title="Hires" value={data.accepted_candidates?.length || 0} icon={CheckCircle} trend="up" color="blue" detail={data.accepted_candidates?.length || 0 + " Accepted"} />
               </div>
 
               {/* Candidates/Jobs/Pipeline Tabs */}

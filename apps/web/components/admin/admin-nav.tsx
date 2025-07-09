@@ -1,42 +1,35 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { Briefcase, Bell, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
+"use client"
+import { useCallback, memo, useEffect, useState } from "react"
+import { Briefcase, Sun, Moon } from "lucide-react"
+import { useTheme } from "next-themes"
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link"
 
-export function AdminNavbar() {
-  const { theme, setTheme } = useTheme();
+export const AdminNavbar = memo(function AdminNavbar() {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
-  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === "dark" ? "light" : "dark")
+  }, [theme, setTheme])
 
-  function logout() {
-    localStorage.removeItem("token");
-    window.location.href = "/";
-  }
+  const logout = useCallback(() => {
+    localStorage.removeItem("token")
+    window.location.href = "/"
+  }, [])
 
   return (
     <header className="flex items-center justify-between py-4 border-b border-slate-200 dark:border-slate-700 mb-6">
@@ -62,14 +55,12 @@ export function AdminNavbar() {
                   onClick={toggleTheme}
                   className="text-slate-600 dark:text-slate-400"
                 >
-                  {mounted ? (
-                    theme === "dark" ? (
-                      <Sun className="h-5 w-5" />
-                    ) : (
-                      <Moon className="h-5 w-5" />
-                    )
+                  {!mounted ? (
+                    <div className="h-5 w-5" />
+                  ) : theme === "dark" ? (
+                    <Sun className="h-5 w-5" />
                   ) : (
-                    <div className="h-5 w-5" /> // placeholder to prevent layout shift
+                    <Moon className="h-5 w-5" />
                   )}
                 </Button>
               </TooltipTrigger>
@@ -80,43 +71,34 @@ export function AdminNavbar() {
           </TooltipProvider>
 
           {/* User Avatar Dropdown */}
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <Avatar className="cursor-pointer">
-                <AvatarImage
-                  src="/placeholder.svg?height=40&width=40"
-                  alt="User"
-                />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="cursor-pointer hover:ring-2 hover:ring-cyan-500 hover:ring-offset-2 dark:hover:ring-orange-400 dark:hover:ring-offset-slate-800 transition-all">
+                <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
                 <AvatarFallback className="bg-cyan-100 text-cyan-600 dark:bg-slate-700 dark:text-cyan-400">
-                  JD
+                  A
                 </AvatarFallback>
               </Avatar>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-48 mt-2 p-2 rounded-lg shadow-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-              <div className="flex flex-col space-y-2">
-                <a
-                  href="/dashboard"
-                  className="text-sm text-slate-700 dark:text-slate-200 hover:underline"
-                >
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48" align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/admin/dashboard" className="w-full cursor-pointer">
                   Dashboard
-                </a>
-                <a
-                  href="/settings"
-                  className="text-sm text-slate-700 dark:text-slate-200 hover:underline"
-                >
-                  Settings
-                </a>
-                <a
-                  onClick={logout}
-                  className="text-sm text-red-500 hover:underline cursor-pointer"
-                >
-                  Logout
-                </a>
-              </div>
-            </HoverCardContent>
-          </HoverCard>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="dashboard/jobs" className="w-full cursor-pointer">
+                  All Jobs
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500 cursor-pointer">
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
-  );
-}
+  )
+})
