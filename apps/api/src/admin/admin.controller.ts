@@ -67,11 +67,12 @@ export class AdminController {
     const users_by_profile = await this.usersService.getAllUsersWithProfiles()
     const all_users = await this.usersService.getAllRegisteredUsers()
     const all_jobs = await this.jobsService.getAllJobs()
+    const stats = await this.adminService.getAllStatsForDashboard()
     const all_candidates = await this.jobsService.getAllApplicants()
     const interviews = all_candidates.filter(candidate => candidate.status == "interview")
     const accepted_candidates = all_candidates.filter(candidate => candidate.status == "accepted")
     const all_tests = await this.evaluationService.getAllTests()
-    return {profile:user_profile,users_by_profile,all_users,all_jobs,all_candidates,all_tests,interviews,accepted_candidates};
+    return {profile:user_profile,users_by_profile,all_users,all_jobs,all_candidates,all_tests,interviews,accepted_candidates,stats};
   }
 
   @Get('jobs') 

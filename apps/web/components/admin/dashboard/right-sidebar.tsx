@@ -9,6 +9,7 @@ import { CreateStaff } from "@/components/create-staff"
 import { TestCreatorForm } from "@/components/admin/test-form"
 import { Button } from "@/components/ui/button"
 import { MaterialDialog } from "@/components/admin/material-form"
+import { generateJobsExcelReport } from "@/components/admin/dashboard/jobs-report-generator"
 
 interface RightSidebarProps {
   data: any
@@ -19,10 +20,23 @@ interface RightSidebarProps {
 }
 
 export function RightSidebar({ data, currentTime, formatDate, token, user }: RightSidebarProps) {
-  const { all_users, users_by_profile, profile, all_candidates, all_jobs } = data || {}
+  const { all_users, users_by_profile, profile, all_candidates, all_jobs, stats } = data || {}
+  const [exportLoading, setExportLoading] = useState(false)
   const [openDialogTest, setOpenDialogTest] = useState(false)
   const [openDialogNewJob, setOpenDialogNewJob] = useState(false)
   // console.log(profile?.user.id)
+
+  const handleExportExcel = async () => {
+    try {
+      setExportLoading(true)
+      await generateJobsExcelReport(all_jobs, stats)
+    } catch (error) {
+      console.error("Error generating Excel:", error)
+      alert("Failed to generate Excel report")
+    } finally {
+      setExportLoading(false)
+    }
+  }
 
   const aWeekAgo = new Date();
   aWeekAgo.setDate(aWeekAgo.getDate() - 7);
@@ -80,7 +94,7 @@ export function RightSidebar({ data, currentTime, formatDate, token, user }: Rig
                 
                 <ActionButton icon={FileText} label="New Job" onClick={() => setOpenDialogNewJob(true)} />
                 <ActionButton icon={FileText} label="New Test" onClick={() => setOpenDialogTest(true)} />
-                <ActionButton icon={FileText} label="Reports" />
+                <ActionButton icon={FileText} label="Reports" onClick={handleExportExcel} />
               </div>
             </CardContent>
           </Card>

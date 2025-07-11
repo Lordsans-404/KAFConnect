@@ -30,6 +30,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { jwtDecode } from "jwt-decode"
 import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
+import { AdminNavbar } from "@/components/admin/admin-nav"
 import { MaterialDialog } from "@/components/admin/material-form"
 
 interface Material {
@@ -281,6 +282,7 @@ export default function MaterialsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="container mx-auto p-6">
+        <AdminNavbar/>
         <div className="grid grid-cols-12 gap-6">
           <DashboardSidebar currentPage={currentPage} user={user} />
 

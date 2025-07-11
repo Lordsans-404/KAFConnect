@@ -19,4 +19,10 @@ export class AdminService {
     const materials = await this.jobsService.getAllMaterials(page=1,limit=100) // get all meterials and add to one job
     return {jobs,all_tests,materials}
   }
+
+  async getAllStatsForDashboard(){
+    const departmentStats = await this.jobsService.getDepartmentStats()
+    const employmentStats = await this.jobsService.getEmploymentTypeStats()
+    return {departmentStats,employmentStats}
+  }
 }

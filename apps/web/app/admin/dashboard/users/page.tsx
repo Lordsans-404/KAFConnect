@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dialog"
 import { jwtDecode } from "jwt-decode"
 import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
+import { AdminNavbar } from "@/components/admin/admin-nav"
 
 export enum UserLevel {
   BASIC = "basic",
@@ -303,7 +304,8 @@ export default function UsersPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6">\
+        <AdminNavbar/>
         <div className="grid grid-cols-12 gap-6">
           <DashboardSidebar currentPage={currentPage} user={user} />
 

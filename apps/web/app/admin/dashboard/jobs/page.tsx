@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Loader2, PlusCircle, FileText, FileSpreadshe
 import { JobDetailDialog } from "@/components/admin/job-detail"
 import { CreateJob } from "@/components/create-job"
 import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
+import { AdminNavbar } from "@/components/admin/admin-nav"
 import { JobAnalytics } from "@/components/admin/job-analytics"
 import { jwtDecode } from "jwt-decode"
 import { generateJobsPDFReport, generateJobsExcelReport } from "@/components/admin/dashboard/jobs-report-generator"
@@ -210,6 +211,7 @@ export default function JobsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="container mx-auto p-6">
+        <AdminNavbar/>
         <div className="grid grid-cols-12 gap-6">
           <DashboardSidebar currentPage={"jobs"} user={user} />
           <div className="col-span-12 md:col-span-9 lg:col-span-10">
