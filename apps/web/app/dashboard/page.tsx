@@ -9,7 +9,6 @@ import {
   Calendar,
   ChevronRight,
   Clock,
-  Edit,
   Eye,
   FileText,
   Mail,
@@ -31,6 +30,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { ApplicationDialog } from "@/components/applicant-form"
+import { timeAgo } from "@/components/utils/timeAgo"
 
 // get API url
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
@@ -128,7 +128,7 @@ export default function UserDashboard() {
         }
 
         const data = await res.json()
-        setProfileData(data)
+        setProfileData(data.profile)
         setUser(data.user || null)
         setIsLoading(false)
       } catch (err) {
@@ -222,7 +222,7 @@ export default function UserDashboard() {
     phone: profileData?.phoneNumber || "not provided",
     isVerified: user?.isVerified,
   }
-
+  console.log(profileData)
   // Pagination handlers
   const handleApplicationsPageChange = (page: number) => {
     loadApplications(page)
@@ -267,20 +267,6 @@ export default function UserDashboard() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="relative text-slate-700 dark:text-slate-300">
-                      <Bell className="h-5 w-5" />
-                      <span className="absolute -top-1 -right-1 h-2 w-2 bg-cyan-500 rounded-full animate-pulse"></span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Notifications</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -299,7 +285,7 @@ export default function UserDashboard() {
               <Avatar>
                 <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
                 <AvatarFallback className="bg-cyan-100 text-cyan-600 dark:bg-slate-700 dark:text-cyan-400">
-                  AJ
+                  U
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -309,7 +295,7 @@ export default function UserDashboard() {
         {/* Main content */}
         <div className="grid grid-cols-12 gap-6">
           {/* Left sidebar - User Profile */}
-          <div className="col-span-12 md:col-span-4 lg:col-span-4">
+          <div className="col-span-12 md:col-span-4 lg:col-span-4 md:sticky md:top-4 h-fit">
             <div className="space-y-6">
               {/* Profile Card */}
               <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
@@ -318,7 +304,7 @@ export default function UserDashboard() {
                     <Avatar className="h-20 w-20">
                       <AvatarImage src="/placeholder.svg?height=80&width=80" alt={userData.name} />
                       <AvatarFallback className="text-2xl bg-cyan-100 text-cyan-600 dark:bg-slate-700 dark:text-cyan-400">
-                        AJ
+                        U
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -342,10 +328,6 @@ export default function UserDashboard() {
                     <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                       <div className="flex items-center justify-between mb-2">
                         <div className="text-sm font-medium text-slate-900 dark:text-slate-200">Contact Info</div>
-                        <Button variant="ghost" size="sm" className="h-8 px-2 text-cyan-600 dark:text-cyan-400">
-                          <Edit className="h-3.5 w-3.5 mr-1" />
-                          Edit
-                        </Button>
                       </div>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center text-slate-700 dark:text-slate-300 min-w-0">
@@ -371,51 +353,6 @@ export default function UserDashboard() {
                     </Button>
                   </Link>
                 </CardFooter>
-              </Card>
-
-              {/* Documents */}
-              <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-slate-900 dark:text-slate-100 text-base">Documents</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/30 rounded-md border border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center">
-                        <FileText className="h-5 w-5 text-cyan-600 dark:text-cyan-400 mr-3" />
-                        <div>
-                          <div className="text-sm font-medium text-slate-900 dark:text-slate-200">
-                            Resume_AJ_2023.pdf
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Uploaded 2 months ago</div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/30 rounded-md border border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center">
-                        <FileText className="h-5 w-5 text-cyan-600 dark:text-cyan-400 mr-3" />
-                        <div>
-                          <div className="text-sm font-medium text-slate-900 dark:text-slate-200">
-                            Cover_Letter_Template.docx
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Uploaded 3 months ago</div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <Button className="w-full mt-2 bg-cyan-600 hover:bg-cyan-700 text-white">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload New Document
-                    </Button>
-                  </div>
-                </CardContent>
               </Card>
             </div>
           </div>
@@ -772,23 +709,4 @@ function JobItem({ token, job, match }: { token: string | null; job: any; match:
       </div>
     </div>
   )
-}
-
-// Helper to format time ago
-function timeAgo(date: Date): string {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000)
-  const intervals = [
-    { label: "year", seconds: 31536000 },
-    { label: "month", seconds: 2592000 },
-    { label: "week", seconds: 604800 },
-    { label: "day", seconds: 86400 },
-    { label: "hour", seconds: 3600 },
-    { label: "minute", seconds: 60 },
-  ]
-
-  for (const interval of intervals) {
-    const count = Math.floor(seconds / interval.seconds)
-    if (count > 0) return `${count} ${interval.label}${count > 1 ? "s" : ""} ago`
-  }
-  return "Just now"
 }

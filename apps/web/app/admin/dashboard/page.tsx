@@ -1,10 +1,10 @@
+// dashboard page
 "use client"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ThemeProvider } from "next-themes"
 
-import { DashboardLayout } from "@/components/admin/dashboard/layout"
 import { DashboardContent } from "@/components/admin/dashboard/dashboard-content"
 import { LoadingOverlay } from "@/components/admin/dashboard/loading-overlay"
 import {jwtDecode} from "jwt-decode"
@@ -70,12 +70,10 @@ export default function Dashboard() {
     })
   return (
     <ThemeProvider attribute="class">
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-white dark:from-slate-900 dark:to-slate-800 text-slate-800 dark:text-slate-100 relative">
+      <div className="min-h-screen from-slate-100 to-white dark:from-slate-900 dark:to-slate-800 text-slate-800 dark:text-slate-100 relative">
         {isLoading && <LoadingOverlay />}
 
-        <DashboardLayout user={user} >
-          <DashboardContent data={data} currentTime={currentTime} formatDate={formatDate} token={token} user={user} />
-        </DashboardLayout>
+        <DashboardContent data={data} currentTime={currentTime} formatDate={formatDate} token={token} user={user} />
       </div>
     </ThemeProvider>
   )

@@ -29,8 +29,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { jwtDecode } from "jwt-decode"
-import { DashboardSidebar } from "@/components/admin/dashboard/sidebar"
-import { AdminNavbar } from "@/components/admin/admin-nav"
 import { MaterialDialog } from "@/components/admin/material-form"
 
 interface Material {
@@ -280,307 +278,263 @@ export default function MaterialsPage() {
   const currentPage = "materials"
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <div className="container mx-auto p-6">
-        <AdminNavbar/>
-        <div className="grid grid-cols-12 gap-6">
-          <DashboardSidebar currentPage={currentPage} user={user} />
 
-          <div className="col-span-12 md:col-span-9 lg:col-span-10">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Materials Management</h1>
-                  <p className="text-slate-600 dark:text-slate-400 mt-1">
-                    Manage learning materials and resources ({materials.length} of {allMaterials.length} total)
-                  </p>
-                </div>
-                <MaterialDialog token={token}>
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Material
-                  </Button>
-                </MaterialDialog>
-              </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Materials Management</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">
+            Manage learning materials and resources ({materials.length} of {allMaterials.length} total)
+          </p>
+        </div>
+        <MaterialDialog token={token}>
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Material
+          </Button>
+        </MaterialDialog>
+      </div>
 
-              {/* Active Filters Display */}
-              {hasActiveFilters && (
-                <div className="flex flex-wrap items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Active filters:</span>
+      {/* Active Filters Display */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Active filters:</span>
 
-                  {filters.hasFile !== "all" && (
-                    <Badge
-                      variant="secondary"
-                      className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                    >
-                      File: {getFileTypeDisplayName(filters.hasFile)}
-                      <button
-                        onClick={() => handleFileFilter("all")}
-                        className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  )}
+          {filters.hasFile !== "all" && (
+            <Badge
+              variant="secondary"
+              className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+            >
+              File: {getFileTypeDisplayName(filters.hasFile)}
+              <button
+                onClick={() => handleFileFilter("all")}
+                className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
 
-                  {filters.hasJobs !== "all" && (
-                    <Badge
-                      variant="secondary"
-                      className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                    >
-                      Jobs: {getJobsDisplayName(filters.hasJobs)}
-                      <button
-                        onClick={() => handleJobsFilter("all")}
-                        className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  )}
+          {filters.hasJobs !== "all" && (
+            <Badge
+              variant="secondary"
+              className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+            >
+              Jobs: {getJobsDisplayName(filters.hasJobs)}
+              <button
+                onClick={() => handleJobsFilter("all")}
+                className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
 
-                  {filters.dateRange !== "all" && (
-                    <Badge
-                      variant="secondary"
-                      className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                    >
-                      Date: {getDateRangeDisplayName(filters.dateRange)}
-                      <button
-                        onClick={() => handleDateFilter("all")}
-                        className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  )}
+          {filters.dateRange !== "all" && (
+            <Badge
+              variant="secondary"
+              className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+            >
+              Date: {getDateRangeDisplayName(filters.dateRange)}
+              <button
+                onClick={() => handleDateFilter("all")}
+                className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-full p-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="h-6 px-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
-                  >
-                    Clear all
-                  </Button>
-                </div>
-              )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-6 px-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
 
-              {loading ? (
-                <div className="flex justify-center items-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
-                  <span className="ml-2 text-slate-500">Loading materials...</span>
-                </div>
-              ) : (
-                <>
-                  <Card className="border-0">
-                    <CardHeader>
-                      <CardTitle className="text-lg">Learning Materials</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                      <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        {/* Table Header with Filters */}
-                        <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                          <div className="col-span-3">Material</div>
-                          <div className="col-span-2 flex items-center gap-2">
-                            File/URL
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                >
-                                  <Filter
-                                    className={`h-3 w-3 ${filters.hasFile !== "all" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
-                                  />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="start" className="w-40">
-                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-                                  Filter by File:
-                                </div>
-                                <DropdownMenuSeparator />
-                                {(["all", "with_file", "with_url", "no_file"] as const).map((fileType) => (
-                                  <DropdownMenuItem
-                                    key={fileType}
-                                    onClick={() => handleFileFilter(fileType)}
-                                    className={filters.hasFile === fileType ? "bg-blue-50 dark:bg-blue-900/20" : ""}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      {filters.hasFile === fileType && <Check className="h-3 w-3 text-blue-600" />}
-                                      <span>{getFileTypeDisplayName(fileType)}</span>
-                                    </div>
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                          <div className="col-span-2 flex items-center gap-2">
-                            Jobs
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                >
-                                  <Filter
-                                    className={`h-3 w-3 ${filters.hasJobs !== "all" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
-                                  />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="start" className="w-32">
-                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-                                  Filter by Jobs:
-                                </div>
-                                <DropdownMenuSeparator />
-                                {(["all", "with_jobs", "no_jobs"] as const).map((jobsType) => (
-                                  <DropdownMenuItem
-                                    key={jobsType}
-                                    onClick={() => handleJobsFilter(jobsType)}
-                                    className={filters.hasJobs === jobsType ? "bg-blue-50 dark:bg-blue-900/20" : ""}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      {filters.hasJobs === jobsType && <Check className="h-3 w-3 text-blue-600" />}
-                                      <span>{getJobsDisplayName(jobsType)}</span>
-                                    </div>
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                          <div className="col-span-2 flex items-center gap-2">
-                            Posted
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                >
-                                  <Filter
-                                    className={`h-3 w-3 ${filters.dateRange !== "all" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
-                                  />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="start" className="w-40">
-                                <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-                                  Filter by Date:
-                                </div>
-                                <DropdownMenuSeparator />
-                                {(["all", "today", "week", "month", "3months"] as const).map((range) => (
-                                  <DropdownMenuItem
-                                    key={range}
-                                    onClick={() => handleDateFilter(range)}
-                                    className={filters.dateRange === range ? "bg-blue-50 dark:bg-blue-900/20" : ""}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      {filters.dateRange === range && <Check className="h-3 w-3 text-blue-600" />}
-                                      <span>{getDateRangeDisplayName(range)}</span>
-                                    </div>
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                          <div className="col-span-2">Description</div>
-                          <div className="col-span-1">Actions</div>
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
+          <span className="ml-2 text-slate-500">Loading materials...</span>
+        </div>
+      ) : (
+        <>
+          <Card className="border-0">
+            <CardHeader>
+              <CardTitle className="text-lg">Learning Materials</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                {/* Table Header with Filters */}
+                <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                  <div className="col-span-3">Material</div>
+                  <div className="col-span-2 flex items-center gap-2">
+                    File/URL
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <Filter
+                            className={`h-3 w-3 ${filters.hasFile !== "all" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
+                          />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-40">
+                        <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                          Filter by File:
                         </div>
-
-                        {/* Table Rows */}
-                        <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                          {displayedMaterials.map((material) => (
-                            <MaterialRow
-                              key={material.id}
-                              material={material}
-                              onMaterialUpdated={handleMaterialUpdated}
-                              postedDate={timeAgo(new Date(material.postedAt))}
-                            />
-                          ))}
-                          {displayedMaterials.length === 0 && (
-                            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-                              <p>
-                                {hasActiveFilters ? "No materials match the current filters" : "No materials found"}
-                              </p>
-                              {hasActiveFilters && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={clearFilters}
-                                  className="mt-2 bg-transparent"
-                                >
-                                  Clear filters
-                                </Button>
-                              )}
+                        <DropdownMenuSeparator />
+                        {(["all", "with_file", "with_url", "no_file"] as const).map((fileType) => (
+                          <DropdownMenuItem
+                            key={fileType}
+                            onClick={() => handleFileFilter(fileType)}
+                            className={filters.hasFile === fileType ? "bg-blue-50 dark:bg-blue-900/20" : ""}
+                          >
+                            <div className="flex items-center gap-2">
+                              {filters.hasFile === fileType && <Check className="h-3 w-3 text-blue-600" />}
+                              <span>{getFileTypeDisplayName(fileType)}</span>
                             </div>
-                          )}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="col-span-2 flex items-center gap-2">
+                    Posted
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <Filter
+                            className={`h-3 w-3 ${filters.dateRange !== "all" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
+                          />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-40">
+                        <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                          Filter by Date:
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <DropdownMenuSeparator />
+                        {(["all", "today", "week", "month", "3months"] as const).map((range) => (
+                          <DropdownMenuItem
+                            key={range}
+                            onClick={() => handleDateFilter(range)}
+                            className={filters.dateRange === range ? "bg-blue-50 dark:bg-blue-900/20" : ""}
+                          >
+                            <div className="flex items-center gap-2">
+                              {filters.dateRange === range && <Check className="h-3 w-3 text-blue-600" />}
+                              <span>{getDateRangeDisplayName(range)}</span>
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="col-span-4">Description</div>
+                  <div className="col-span-1">Actions</div>
+                </div>
 
-                  {/* Pagination Controls */}
-                  {pagination.totalPages > 1 && (
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-slate-600 dark:text-slate-400">
-                        Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-                        {Math.min(pagination.page * pagination.limit, materials.length)} of {materials.length} results
-                        {hasActiveFilters && ` (filtered from ${allMaterials.length} total)`}
-                      </div>
-                      <div className="flex items-center space-x-2">
+                {/* Table Rows */}
+                <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {displayedMaterials.map((material) => (
+                    <MaterialRow
+                      key={material.id}
+                      material={material}
+                      onMaterialUpdated={handleMaterialUpdated}
+                      postedDate={timeAgo(new Date(material.postedAt))}
+                    />
+                  ))}
+                  {displayedMaterials.length === 0 && (
+                    <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                      <p>
+                        {hasActiveFilters ? "No materials match the current filters" : "No materials found"}
+                      </p>
+                      {hasActiveFilters && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handlePageChange(pagination.page - 1)}
-                          disabled={pagination.page === 1}
-                          className="h-8"
+                          onClick={clearFilters}
+                          className="mt-2 bg-transparent"
                         >
-                          <ChevronLeft className="h-4 w-4" />
-                          Previous
+                          Clear filters
                         </Button>
-                        <div className="flex items-center space-x-1">
-                          {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                            let pageNumber
-                            if (pagination.totalPages <= 5) {
-                              pageNumber = i + 1
-                            } else if (pagination.page <= 3) {
-                              pageNumber = i + 1
-                            } else if (pagination.page >= pagination.totalPages - 2) {
-                              pageNumber = pagination.totalPages - 4 + i
-                            } else {
-                              pageNumber = pagination.page - 2 + i
-                            }
-                            return (
-                              <Button
-                                key={pageNumber}
-                                variant={pagination.page === pageNumber ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => handlePageChange(pageNumber)}
-                                className="h-8 w-8 p-0"
-                              >
-                                {pageNumber}
-                              </Button>
-                            )
-                          })}
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePageChange(pagination.page + 1)}
-                          disabled={pagination.page === pagination.totalPages}
-                          className="h-8"
-                        >
-                          Next
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      )}
                     </div>
                   )}
-                </>
-              )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pagination Controls */}
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+                {Math.min(pagination.page * pagination.limit, materials.length)} of {materials.length} results
+                {hasActiveFilters && ` (filtered from ${allMaterials.length} total)`}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="h-8"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    let pageNumber
+                    if (pagination.totalPages <= 5) {
+                      pageNumber = i + 1
+                    } else if (pagination.page <= 3) {
+                      pageNumber = i + 1
+                    } else if (pagination.page >= pagination.totalPages - 2) {
+                      pageNumber = pagination.totalPages - 4 + i
+                    } else {
+                      pageNumber = pagination.page - 2 + i
+                    }
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={pagination.page === pageNumber ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNumber)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {pageNumber}
+                      </Button>
+                    )
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.totalPages}
+                  className="h-8"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          )}
+        </>
+      )}
     </div>
   )
 }
@@ -614,24 +568,6 @@ function MaterialRow({ material, postedDate, onMaterialUpdated }: MaterialRowPro
       return (
         <Badge variant="secondary" className="bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-100">
           No File
-        </Badge>
-      )
-    }
-  }
-
-  const getJobsBadge = () => {
-    const jobCount = material.jobs?.length || 0
-    if (jobCount > 0) {
-      return (
-        <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100">
-          <Briefcase className="h-3 w-3 mr-1" />
-          {jobCount} Job{jobCount > 1 ? "s" : ""}
-        </Badge>
-      )
-    } else {
-      return (
-        <Badge variant="secondary" className="bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-100">
-          No Jobs
         </Badge>
       )
     }
@@ -672,14 +608,13 @@ function MaterialRow({ material, postedDate, onMaterialUpdated }: MaterialRowPro
 
       <div className="col-span-2 flex items-center">{getFileTypeBadge()}</div>
 
-      <div className="col-span-2 flex items-center">{getJobsBadge()}</div>
 
       <div className="col-span-2 flex items-center text-slate-500 dark:text-slate-400">
         <Calendar className="h-3 w-3 mr-1" />
         {postedDate}
       </div>
 
-      <div className="col-span-2 flex items-center">
+      <div className="col-span-4 flex items-center">
         <p className="text-xs text-slate-600 dark:text-slate-400 truncate" title={material.description}>
           {material.description.length > 50 ? `${material.description.substring(0, 50)}...` : material.description}
         </p>

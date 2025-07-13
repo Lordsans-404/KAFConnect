@@ -24,7 +24,6 @@ export function RightSidebar({ data, currentTime, formatDate, token, user }: Rig
   const [exportLoading, setExportLoading] = useState(false)
   const [openDialogTest, setOpenDialogTest] = useState(false)
   const [openDialogNewJob, setOpenDialogNewJob] = useState(false)
-  // console.log(profile?.user.id)
 
   const handleExportExcel = async () => {
     try {
@@ -40,7 +39,6 @@ export function RightSidebar({ data, currentTime, formatDate, token, user }: Rig
 
   const aWeekAgo = new Date();
   aWeekAgo.setDate(aWeekAgo.getDate() - 7);
-  console.log(user.level)
   const newCandidates = all_candidates?.filter(candidate => {
     const applicationDate = new Date(candidate.applicationDate);
     return applicationDate >= aWeekAgo;
@@ -48,7 +46,7 @@ export function RightSidebar({ data, currentTime, formatDate, token, user }: Rig
   return (
     <>
       <div className="col-span-0 md:col-span-3 lg:hidden md:sticky md:top-4 h-fit"></div>
-      <div className="col-span-12 md:col-span-9 lg:col-span-3">
+      <div className="col-span-12 lg:col-span-3">
         <div className="grid gap-6">
           {/* Today's Summary Card */}
           <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 overflow-hidden">
