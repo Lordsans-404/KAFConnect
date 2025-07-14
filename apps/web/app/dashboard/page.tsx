@@ -155,6 +155,11 @@ export default function UserDashboard() {
       if (res.ok) {
         const data = await res.json()
         setApplicationsData(data)
+        if(data.acceptedApplication.length>0){
+          alert("Congrats You Have Been Accepted!")
+          window.location.href = "/dashboard/accepted"
+          return
+        }
       }
     } catch (err) {
       console.error("Failed to fetch applications", err)
@@ -222,7 +227,6 @@ export default function UserDashboard() {
     phone: profileData?.phoneNumber || "not provided",
     isVerified: user?.isVerified,
   }
-  console.log(profileData)
   // Pagination handlers
   const handleApplicationsPageChange = (page: number) => {
     loadApplications(page)

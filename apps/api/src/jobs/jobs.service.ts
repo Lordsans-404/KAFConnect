@@ -169,6 +169,19 @@ export class JobsService {
       skip,
       take,
     });
+    const allData = await this.jobApplicationRepository
+    .createQueryBuilder("application")
+    .leftJoin("application.job", "job")
+    .leftJoin("application.userApplicant", "user")
+    .select([
+      "application.id",
+      "application.status",
+      "application.applicationDate",
+      "job.id",
+      "job.title",
+      "user.id",
+    ])
+    .getMany(); // Ambil semua data tanpa pagination
 
     return {
       data: jobAppliants,
@@ -176,6 +189,7 @@ export class JobsService {
       page,
       limit: take,
       totalPages: Math.ceil(total / take),
+      allData
     };
   }
 
@@ -225,13 +239,29 @@ export class JobsService {
       .take(take)
       .orderBy('application.applicationDate', 'DESC')
       .getManyAndCount();
+    const acceptedApplication = appliedJobs.filter(application => application.status == "accepted")
     return {
       data : await this.checkExpMultipleTest(appliedJobs),
       total,
       page,
       limit,
+      acceptedApplication,
       totalPages: Math.ceil(total / take),  
     }
+  }
+
+  async getAcceptedApplication(userId:number){
+    const acceptedApplication = await this.jobApplicationRepository.findOne({
+      where: {
+        userApplicant: { id: userId },
+        status: ApplicationStatus.ACCEPTED,
+      },
+      order: {
+        id: 'ASC', // Ambil yang ID paling kecil = "pertama dibuat"
+      },
+      relations: ["job"]
+    })
+    return acceptedApplication
   }
 
   async getAllApplicants(){

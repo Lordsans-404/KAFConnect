@@ -97,13 +97,6 @@ export class UsersService {
     };
   }
 
-  async dashboardService(req: any) {
-    const profile = await this.profileByUserId(req.id);
-    const jobs = await this.jobsService.getUnappliedJobs(req.id)
-    const appliedJobs = await this.jobsService.getAppliedJobs(req.id)
-    return { profile, dataJobs:jobs,dataApplicants:appliedJobs };
-  }
-
   async sendVerificationEmail(email: string, token: string) {
     const user = await this.userRepo.findOne({ 
       where: { email },

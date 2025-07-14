@@ -68,13 +68,8 @@ export class UsersController {
     const user_profile = await this.usersService.profileFindOne({
       where: { user: { id: req.user.id } }
     });
-    return {user:user,profile:user_profile};
-  }
-
-  @Get('dashboard')
-  @UseGuards(JwtAuthGuard)
-  async getDashboard(@Req() req){
-    return this.usersService.dashboardService(req.user)
+    const acceptedApplication = await this.jobsService.getAcceptedApplication(req.user.id)
+    return {user:user,profile:user_profile,acceptedApplication};
   }
 
   @Get('applied-jobs')
