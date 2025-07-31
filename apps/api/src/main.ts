@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule,{
   logger: ['error', 'warn', 'log'],});
   app.enableCors({
-    origin: 'http://localhost:3001', // ganti sesuai frontend kamu
+    origin: true, // ganti sesuai frontend kamu
     credentials: true,
   });
   app.useGlobalPipes(
@@ -27,7 +27,7 @@ async function bootstrap() {
     }),
   );
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 
 }
 bootstrap();

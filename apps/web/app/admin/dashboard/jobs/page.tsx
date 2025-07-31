@@ -353,7 +353,7 @@ export default function JobsPage() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">All Jobs</h1>
           <p className="text-slate-600 dark:text-slate-400">Manage and view all job postings ({pagination.total} total)</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button 
             onClick={() => handleExport("pdf")} 
             disabled={exportLoading || !jobs.length} 

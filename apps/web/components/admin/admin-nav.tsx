@@ -87,7 +87,7 @@ export const AdminNavbar = memo(function AdminNavbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="dashboard/jobs" className="w-full cursor-pointer">
+                <Link href="/admin/dashboard/jobs" className="w-full cursor-pointer">
                   All Jobs
                 </Link>
               </DropdownMenuItem>

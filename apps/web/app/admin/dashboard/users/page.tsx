@@ -371,102 +371,106 @@ export default function UsersPage() {
             <CardContent className="p-0">
               <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
                 {/* Table Header with Filters */}
-                <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                  <div className="col-span-5">User</div>
-                  <div className="col-span-2 flex items-center gap-2">
-                    Level
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <Filter
-                            className={`h-3 w-3 ${filters.level.length > 0 ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
-                          />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-48">
-                        <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-                          Filter by Level:
-                        </div>
-                        <DropdownMenuSeparator />
-                        {Object.values(UserLevel).map((level) => (
-                          <DropdownMenuCheckboxItem
-                            key={level}
-                            checked={filters.level.includes(level)}
-                            onCheckedChange={() => handleLevelFilter(level)}
+                <div className="overflow-x-auto w-full">
+                  <div className="min-w-[768px]">
+                  <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                    <div className="col-span-4">User</div>
+                    <div className="col-span-3 flex items-center gap-2">
+                      Level
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
                           >
-                            {getLevelDisplayName(level)}
-                          </DropdownMenuCheckboxItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <div className="col-span-2 flex items-center gap-2">
-                    Status
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <Filter
-                            className={`h-3 w-3 ${filters.verified !== "all" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
-                          />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-40">
-                        <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-                          Filter by Status:
-                        </div>
-                        <DropdownMenuSeparator />
-                        {(["all", "verified", "unverified"] as const).map((status) => (
-                          <DropdownMenuItem
-                            key={status}
-                            onClick={() => handleVerifiedFilter(status)}
-                            className={filters.verified === status ? "bg-blue-50 dark:bg-blue-900/20" : ""}
-                          >
-                            <div className="flex items-center gap-2">
-                              {filters.verified === status && <Check className="h-3 w-3 text-blue-600" />}
-                              <span>{getVerifiedDisplayName(status)}</span>
-                            </div>
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <div className="col-span-2">Profile</div>
-                  <div className="col-span-1">Actions</div>
-                </div>
-
-                {/* Table Rows */}
-                <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {displayedUsers.map((profile) => (
-                    <UserRow
-                      key={profile.profile_id}
-                      userProfile={profile}
-                      onUserUpdated={handleUserUpdated}
-                      registeredDate={timeAgo(new Date(profile.user.createdAt))}
-                    />
-                  ))}
-                  {displayedUsers.length === 0 && (
-                    <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-                      <p>{hasActiveFilters ? "No users match the current filters" : "No users found"}</p>
-                      {hasActiveFilters && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={clearFilters}
-                          className="mt-2 bg-transparent"
-                        >
-                          Clear filters
-                        </Button>
-                      )}
+                            <Filter
+                              className={`h-3 w-3 ${filters.level.length > 0 ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
+                            />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-48">
+                          <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                            Filter by Level:
+                          </div>
+                          <DropdownMenuSeparator />
+                          {Object.values(UserLevel).map((level) => (
+                            <DropdownMenuCheckboxItem
+                              key={level}
+                              checked={filters.level.includes(level)}
+                              onCheckedChange={() => handleLevelFilter(level)}
+                            >
+                              {getLevelDisplayName(level)}
+                            </DropdownMenuCheckboxItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                  )}
+                    <div className="col-span-2 flex items-center gap-2">
+                      Status
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 w-5 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                          >
+                            <Filter
+                              className={`h-3 w-3 ${filters.verified !== "all" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
+                            />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-40">
+                          <div className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                            Filter by Status:
+                          </div>
+                          <DropdownMenuSeparator />
+                          {(["all", "verified", "unverified"] as const).map((status) => (
+                            <DropdownMenuItem
+                              key={status}
+                              onClick={() => handleVerifiedFilter(status)}
+                              className={filters.verified === status ? "bg-blue-50 dark:bg-blue-900/20" : ""}
+                            >
+                              <div className="flex items-center gap-2">
+                                {filters.verified === status && <Check className="h-3 w-3 text-blue-600" />}
+                                <span>{getVerifiedDisplayName(status)}</span>
+                              </div>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="col-span-2">Profile</div>
+                    <div className="col-span-1">Actions</div>
+                  </div>
+
+                  {/* Table Rows */}
+                  <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                    {displayedUsers.map((profile) => (
+                      <UserRow
+                        key={profile.profile_id}
+                        userProfile={profile}
+                        onUserUpdated={handleUserUpdated}
+                        registeredDate={timeAgo(new Date(profile.user.createdAt))}
+                      />
+                    ))}
+                    {displayedUsers.length === 0 && (
+                      <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                        <p>{hasActiveFilters ? "No users match the current filters" : "No users found"}</p>
+                        {hasActiveFilters && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={clearFilters}
+                            className="mt-2 bg-transparent"
+                          >
+                            Clear filters
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -667,14 +671,14 @@ function UserRow({ userProfile, registeredDate, onUserUpdated }: UserRowProps) {
 
   return (
     <div className="grid grid-cols-12 py-3 px-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-700/50">
-      <div className="col-span-5 flex items-center">
+      <div className="col-span-4 flex items-center">
         <div>
           <div className="font-medium text-slate-800 dark:text-slate-200">{currentProfile.user.name}</div>
           <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{currentProfile.user.email}</div>
         </div>
       </div>
 
-      <div className="col-span-2 flex items-center">
+      <div className="col-span-3 flex items-center">
         {canChangeLevel ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -833,6 +837,10 @@ export async function updateUserLevel(userId: number, newLevel: UserLevel): Prom
 
     if (!response.ok) {
       throw new Error(`Failed to update user level: ${response.statusText}`)
+      return {
+        success: false,
+        message: "Failed to Update User Level",
+      }
     }
 
     return {

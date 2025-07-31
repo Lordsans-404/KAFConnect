@@ -3,7 +3,7 @@
 import React from "react"
 
 import type { ReactElement } from "react"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import {
   Briefcase,
@@ -19,6 +19,8 @@ import {
   Hash,
   Clock,
   User,
+  ChevronRight,
+  ChevronDown
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -125,7 +127,7 @@ NavItem.displayName = "NavItem"
 
 // Simplified UserInfoItem component without icons
 const UserInfoItem = React.memo<UserInfoItemProps>(({ label, value, bgColor, textColor }) => {
-  return (
+  return ( 
     <div className={`p-3 rounded-lg ${bgColor} transition-colors`}>
       <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{label}</div>
       <div className={`text-sm font-semibold ${textColor} truncate`} title={value}>
@@ -173,6 +175,10 @@ const SessionInfo = React.memo<{ user: any }>(({ user }) => {
 export const DashboardSidebar = React.memo<DashboardSidebarProps>(({ currentPage, user }) => {
   // Memoize expensive calculations
   const userName = useMemo(() => capitalizeFirstLetter(user?.name?.split(" ")[0]), [user?.name])
+  
+  // Sidebar Toggler
+  const [navOpen, setNavOpen] = useState(true)
+  const [infoOpen, setInfoOpen] = useState(true)
 
   const hasAdminAccess = useMemo(() => ["super_admin", "admin"].includes(user?.level), [user?.level])
 
@@ -240,30 +246,48 @@ export const DashboardSidebar = React.memo<DashboardSidebarProps>(({ currentPage
               </div>
             </div>
           )}
-
-          <nav className="space-y-2">
-            {visibleNavItems.map((item) => (
-              <NavItem
-                key={item.key}
-                icon={item.icon}
-                label={item.label}
-                href={item.href}
-                active={currentPage === item.key}
-              />
-            ))}
-          </nav>
-
-          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">User Information</div>
+          <div className="mt-4">
+            <div className="flex justify-between flex-row mb-2">
+              <p className={`w-full text-left transition-all duration-300 ease-in-out ${navOpen ? 'text-xs' : 'text-l'} md:text-xs font-semibold tracking-wide text-slate-600 dark:text-slate-300 align-middle`}>Page Navigation</p>
+              <button
+                onClick={() => setNavOpen(!navOpen)}
+                className="md:hidden"
+              >
+                {navOpen ? <ChevronRight/> : <ChevronDown />} 
+              </button>
             </div>
+              <nav className={`space-y-3 transition-all duration-300 ease-in-out ${navOpen ? 'block' : 'hidden'} md:block`}>
+                {visibleNavItems.map((item) => (
+                  <NavItem
+                    key={item.key}
+                    icon={item.icon}
+                    label={item.label}
+                    href={item.href}
+                    active={currentPage === item.key}
+                  />
+                ))}
+              </nav>
+          </div>
 
-            <div className="space-y-3">
+          <div className="mt-4 pt-6 border-t border-b border-slate-200 dark:border-slate-700">
+            <div className="flex justify-between flex-row mb-2">
+              <p className={`w-full text-left transition-all duration-300 ease-in-out ${infoOpen ? 'text-xs' : 'text-l'} md:text-xs font-semibold tracking-wide text-slate-600 dark:text-slate-300 align-middle`}>User Information</p>
+              <button
+                onClick={() => setInfoOpen(!infoOpen)}
+                className="md:hidden"
+              >
+                {infoOpen ? <ChevronRight className="text-sm" /> : <ChevronDown />} 
+              </button>
+            </div>
+            
+            {/* Gunakan kelas Tailwind untuk toggle visibility */}
+            <div className={`space-y-3 mb-4 transition-all duration-300 ease-in-out ${infoOpen ? 'block' : 'hidden'} md:block`}>
               {userInfoItems.map((item, index) => (
                 <UserInfoItem key={index} {...item} />
               ))}
             </div>
           </div>
+
         </CardContent>
       </Card>
     </div>

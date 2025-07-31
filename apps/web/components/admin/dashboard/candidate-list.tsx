@@ -19,32 +19,36 @@ import { timeAgo } from "@/components/time-ago"
 export function CandidateList({ all_candidates }: { all_candidates: any }) {
   return (
     <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-      {/* Table Header */}
-      <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-        <div className="col-span-3">Candidate</div>
-        <div className="col-span-3">Job Title</div>
-        <div className="col-span-3">Status</div>
-        <div className="col-span-2">Applied</div>
-        <div className="col-span-1">Resume</div>
-      </div>
+      <div className="overflow-x-auto w-full">
+        <div className="min-w-[700px]">
+        {/* Table Header*/}
+        <div className="grid grid-cols-12 text-xs text-slate-500 dark:text-slate-400 p-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <div className="col-span-3">Candidate</div>
+          <div className="col-span-3">Job Title</div>
+          <div className="col-span-3">Status</div>
+          <div className="col-span-2">Applied</div>
+          <div className="col-span-1">Resume</div>
+        </div>
 
-      {/* Table Rows */}
-      <div className="divide-y divide-slate-200 dark:divide-slate-700">
-        {all_candidates
-          ?.sort((a, b) => new Date(b.applicationDate).getTime() - new Date(a.applicationDate).getTime())
-          .slice(0, 6)
-          .map((candidate) => (
-            <CandidateRow
-              key={candidate.id}
-              id={candidate.id}
-              name={candidate.userApplicant.name}
-              email={candidate.userApplicant.email}
-              position={candidate.job.title}
-              status={candidate.status}
-              date={timeAgo(new Date(candidate.applicationDate))}
-              resumePath={candidate.resumePath}
-            />
-        ))}
+        {/* Table Rows */}
+        <div className="divide-y divide-slate-200 dark:divide-slate-700">
+          {all_candidates
+            ?.sort((a, b) => new Date(b.applicationDate).getTime() - new Date(a.applicationDate).getTime())
+            .slice(0, 6)
+            .map((candidate) => (
+              <CandidateRow
+                key={candidate.id}
+                id={candidate.id}
+                name={candidate.userApplicant.name}
+                email={candidate.userApplicant.email}
+                position={candidate.job.title}
+                status={candidate.status}
+                date={timeAgo(new Date(candidate.applicationDate))}
+                resumePath={candidate.resumePath}
+              />
+          ))}
+        </div>
+        </div>
       </div>
     </div>
   )
